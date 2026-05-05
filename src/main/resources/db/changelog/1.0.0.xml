@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="1" author="codex">
+        <createTable tableName="artists">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_artists"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image_url" type="varchar(2048)"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="codex">
+        <createTable tableName="albums">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_albums"/>
+            </column>
+            <column name="artist_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="released_at" type="varchar(10)"/>
+            <column name="image_url" type="varchar(2048)"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="codex">
+        <createTable tableName="album_versions">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_album_versions"/>
+            </column>
+            <column name="album_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_default" type="boolean" defaultValueBoolean="false"
+            >
+                <constraints nullable="false"/>
+            </column>
+            <column name="released_at" type="varchar(10)"/>
+            <column name="image_url" type="varchar(2048)"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="codex">
+        <createTable tableName="songs">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_songs"/>
+            </column>
+            <column name="artist_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="released_at" type="varchar(10)"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="5" author="codex">
+        <createTable tableName="song_versions">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_song_versions"/>
+            </column>
+            <column name="song_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration_seconds" type="int"/>
+            <column name="released_at" type="varchar(10)"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="6" author="codex">
+        <createTable tableName="album_version_tracks">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_album_version_tracks"/>
+            </column>
+            <column name="album_version_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="song_version_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="disc_number" type="int" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="track_number" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="7" author="codex">
+        <createTable tableName="artist_social">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_artist_social"/>
+            </column>
+            <column name="artist_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="spotify_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="8" author="codex">
+        <createTable tableName="album_version_social">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_album_version_social"/>
+            </column>
+            <column name="album_version_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="spotify_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="9" author="codex">
+        <createTable tableName="song_version_social">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_song_version_social"/>
+            </column>
+            <column name="song_version_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="spotify_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="10" author="codex">
+        <addUniqueConstraint tableName="albums" columnNames="artist_id, title" constraintName="uk_albums_artist_title"/>
+    </changeSet>
+
+    <changeSet id="11" author="codex">
+        <addUniqueConstraint tableName="album_versions" columnNames="album_id, title" constraintName="uk_album_versions_album_title"/>
+    </changeSet>
+
+    <changeSet id="12" author="codex">
+        <addUniqueConstraint tableName="songs" columnNames="artist_id, title" constraintName="uk_songs_artist_title"/>
+    </changeSet>
+
+    <changeSet id="13" author="codex">
+        <addUniqueConstraint tableName="song_versions" columnNames="song_id, title" constraintName="uk_song_versions_song_title"/>
+    </changeSet>
+
+    <changeSet id="14" author="codex">
+        <addUniqueConstraint tableName="album_version_tracks" columnNames="album_version_id, disc_number, track_number" constraintName="uk_album_version_tracks_position"/>
+    </changeSet>
+
+    <changeSet id="15" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="albums"
+            baseColumnNames="artist_id"
+            referencedTableName="artists"
+            referencedColumnNames="id"
+            constraintName="fk_albums_artist"/>
+    </changeSet>
+
+    <changeSet id="16" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="album_versions"
+            baseColumnNames="album_id"
+            referencedTableName="albums"
+            referencedColumnNames="id"
+            constraintName="fk_album_versions_album"/>
+    </changeSet>
+
+    <changeSet id="17" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="songs"
+            baseColumnNames="artist_id"
+            referencedTableName="artists"
+            referencedColumnNames="id"
+            constraintName="fk_songs_artist"/>
+    </changeSet>
+
+    <changeSet id="18" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="song_versions"
+            baseColumnNames="song_id"
+            referencedTableName="songs"
+            referencedColumnNames="id"
+            constraintName="fk_song_versions_song"/>
+    </changeSet>
+
+    <changeSet id="19" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="album_version_tracks"
+            baseColumnNames="album_version_id"
+            referencedTableName="album_versions"
+            referencedColumnNames="id"
+            constraintName="fk_album_version_tracks_album_version"/>
+    </changeSet>
+
+    <changeSet id="20" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="album_version_tracks"
+            baseColumnNames="song_version_id"
+            referencedTableName="song_versions"
+            referencedColumnNames="id"
+            constraintName="fk_album_version_tracks_song_version"/>
+    </changeSet>
+
+    <changeSet id="21" author="codex">
+        <createIndex tableName="albums" indexName="ix_albums_artist_id">
+            <column name="artist_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="22" author="codex">
+        <createIndex tableName="album_versions" indexName="ix_album_versions_album_id">
+            <column name="album_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="23" author="codex">
+        <createIndex tableName="songs" indexName="ix_songs_artist_id">
+            <column name="artist_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="24" author="codex">
+        <createIndex tableName="song_versions" indexName="ix_song_versions_song_id">
+            <column name="song_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="25" author="codex">
+        <createIndex tableName="album_version_tracks" indexName="ix_album_version_tracks_album_version_id">
+            <column name="album_version_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="26" author="codex">
+        <createIndex tableName="album_version_tracks" indexName="ix_album_version_tracks_song_version_id">
+            <column name="song_version_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="27" author="codex">
+        <sql>
+            alter table album_version_tracks
+            add constraint ck_album_version_tracks_disc_number_positive
+            check (disc_number &gt; 0)
+        </sql>
+    </changeSet>
+
+    <changeSet id="28" author="codex">
+        <sql>
+            alter table album_version_tracks
+            add constraint ck_album_version_tracks_track_number_positive
+            check (track_number &gt; 0)
+        </sql>
+    </changeSet>
+
+    <changeSet id="29" author="codex">
+        <sql>
+            alter table song_versions
+            add constraint ck_song_versions_duration_seconds_positive
+            check (duration_seconds is null or duration_seconds &gt; 0)
+        </sql>
+    </changeSet>
+
+    <changeSet id="30" author="codex">
+        <addUniqueConstraint tableName="artist_social" columnNames="spotify_id" constraintName="uk_artist_social_spotify_id"/>
+    </changeSet>
+
+    <changeSet id="31" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="artist_social"
+            baseColumnNames="artist_id"
+            referencedTableName="artists"
+            referencedColumnNames="id"
+            constraintName="fk_artist_social_artist"/>
+    </changeSet>
+
+    <changeSet id="32" author="codex">
+        <createIndex tableName="artist_social" indexName="ix_artist_social_artist_id">
+            <column name="artist_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="33" author="codex">
+        <addUniqueConstraint tableName="album_version_social" columnNames="spotify_id" constraintName="uk_album_version_social_spotify_id"/>
+    </changeSet>
+
+    <changeSet id="34" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="album_version_social"
+            baseColumnNames="album_version_id"
+            referencedTableName="album_versions"
+            referencedColumnNames="id"
+            constraintName="fk_album_version_social_album_version"/>
+    </changeSet>
+
+    <changeSet id="35" author="codex">
+        <createIndex tableName="album_version_social" indexName="ix_album_version_social_album_version_id">
+            <column name="album_version_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="36" author="codex">
+        <addUniqueConstraint tableName="song_version_social" columnNames="spotify_id" constraintName="uk_song_version_social_spotify_id"/>
+    </changeSet>
+
+    <changeSet id="37" author="codex">
+        <addForeignKeyConstraint
+            baseTableName="song_version_social"
+            baseColumnNames="song_version_id"
+            referencedTableName="song_versions"
+            referencedColumnNames="id"
+            constraintName="fk_song_version_social_song_version"/>
+    </changeSet>
+
+    <changeSet id="38" author="codex">
+        <createIndex tableName="song_version_social" indexName="ix_song_version_social_song_version_id">
+            <column name="song_version_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="39" author="codex">
+        <sql>
+            alter table albums
+            add constraint ck_albums_released_at_format
+            check (released_at is null or released_at ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$')
+        </sql>
+    </changeSet>
+
+    <changeSet id="40" author="codex">
+        <sql>
+            alter table album_versions
+            add constraint ck_album_versions_released_at_format
+            check (released_at is null or released_at ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$')
+        </sql>
+    </changeSet>
+
+    <changeSet id="41" author="codex">
+        <sql>
+            alter table songs
+            add constraint ck_songs_released_at_format
+            check (released_at is null or released_at ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$')
+        </sql>
+    </changeSet>
+
+    <changeSet id="42" author="codex">
+        <sql>
+            alter table song_versions
+            add constraint ck_song_versions_released_at_format
+            check (released_at is null or released_at ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$')
+        </sql>
+    </changeSet>
+
+    <changeSet id="43" author="codex">
+        <sql>
+            update album_versions av
+            set is_default = true
+            from (
+                select distinct on (album_id) id
+                from album_versions
+                order by album_id, created_at asc, id asc
+            ) first_versions
+            where av.id = first_versions.id
+        </sql>
+    </changeSet>
+
+    <changeSet id="44" author="codex">
+        <sql>
+            create unique index uk_album_versions_album_default
+            on album_versions (album_id)
+            where is_default
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

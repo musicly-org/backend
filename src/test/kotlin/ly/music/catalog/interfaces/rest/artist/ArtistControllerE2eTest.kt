@@ -1,0 +1,65 @@
+package ly.music.catalog.interfaces.rest.artist
+
+import ly.music.catalog.BackendControllerE2eTestSupport
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+
+class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
+    @Nested
+    inner class GetArtists {
+        @Test
+        fun returnsPagedArtists() {
+            val artist = createArtist()
+
+            val body = getJson("/artists")
+            val item = embeddedItems(body).first()
+
+            assertThat(body["page"]["totalElements"].asInt()).isEqualTo(1)
+            assertNoId(item)
+            assertThat(item["name"].asText()).isEqualTo(artist.name)
+            assertThat(item["imageUrl"].asText()).isEqualTo(artist.imageUrl)
+            assertThat(link(item, "self")).endsWith("/artists/${artist.id}")
+            assertThat(link(item, "albums")).endsWith("/artists/${artist.id}/albums")
+            assertThat(link(item, "songs")).endsWith("/artists/${artist.id}/songs")
+        }
+    }
+
+    @Nested
+    inner class GetArtist {
+        @Test
+        fun returnsArtist() {
+            val artist = createArtist()
+
+            val body = getJson("/artists/${artist.id}")
+
+            assertNoId(body)
+            assertThat(body["name"].asText()).isEqualTo(artist.name)
+            assertThat(body["imageUrl"].asText()).isEqualTo(artist.imageUrl)
+            assertThat(link(body, "self")).endsWith("/artists/${artist.id}")
+            assertThat(link(body, "albums")).endsWith("/artists/${artist.id}/albums")
+            assertThat(link(body, "songs")).endsWith("/artists/${artist.id}/songs")
+        }
+    }
+
+    @Nested
+    inner class CreateArtist {
+        @Test
+        fun createsArtistAndReturnsLocation() {
+            val result = postJson("/artists", mapOf("name" to "Portishead"))
+
+            status().isCreated().match(result)
+
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            val createdArtist = artistRepository.findAll().single()
+
+            assertNoId(body)
+            assertThat(createdArtist.name).isEqualTo("Portishead")
+            assertThat(result.response.getHeader("Location")).endsWith("/artists/${createdArtist.id}")
+            assertThat(link(body, "self")).endsWith("/artists/${createdArtist.id}")
+            assertThat(link(body, "albums")).endsWith("/artists/${createdArtist.id}/albums")
+            assertThat(link(body, "songs")).endsWith("/artists/${createdArtist.id}/songs")
+        }
+    }
+}
