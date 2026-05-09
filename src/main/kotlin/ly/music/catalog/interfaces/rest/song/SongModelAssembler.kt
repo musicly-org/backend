@@ -19,7 +19,7 @@ class SongModelAssembler : RepresentationModelAssemblerSupport<SongEntity, SongM
     override fun toModel(entity: SongEntity): SongModel =
         createModelWithId(entity.id, entity)
             .add(
-                ResourceLinks.artistById(entity.artist.id).withRel("artist"),
-                ResourceLinks.songVersions(entity.id),
+                ResourceLinks.songArtists(entity.id),
+                ResourceLinks.songTracks(entity.id),
             )
 }

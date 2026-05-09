@@ -5,17 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import ly.music.catalog.domain.album.AlbumEntity
 import ly.music.catalog.domain.album.AlbumRepository
-import ly.music.catalog.domain.albumversion.AlbumVersionEntity
-import ly.music.catalog.domain.albumversion.AlbumVersionRepository
-import ly.music.catalog.domain.albumversiontrack.AlbumVersionTrackEntity
-import ly.music.catalog.domain.albumversiontrack.AlbumVersionTrackRepository
+import ly.music.catalog.domain.release.ReleaseEntity
+import ly.music.catalog.domain.release.ReleaseRepository
 import ly.music.catalog.domain.artist.ArtistEntity
 import ly.music.catalog.domain.artist.ArtistRepository
 import ly.music.catalog.domain.release.ReleasedAt
 import ly.music.catalog.domain.song.SongEntity
 import ly.music.catalog.domain.song.SongRepository
-import ly.music.catalog.domain.songversion.SongVersionEntity
-import ly.music.catalog.domain.songversion.SongVersionRepository
+import ly.music.catalog.domain.track.TrackEntity
+import ly.music.catalog.domain.track.TrackRepository
+import ly.music.catalog.domain.tracksocial.TrackSocialEntity
+import ly.music.catalog.domain.tracksocial.TrackSocialRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,28 +50,29 @@ abstract class BackendControllerE2eTestSupport {
     protected lateinit var albumRepository: AlbumRepository
 
     @Autowired
-    protected lateinit var albumVersionRepository: AlbumVersionRepository
+    protected lateinit var releaseRepository: ReleaseRepository
 
     @Autowired
     protected lateinit var songRepository: SongRepository
 
     @Autowired
-    protected lateinit var songVersionRepository: SongVersionRepository
+    protected lateinit var trackRepository: TrackRepository
 
     @Autowired
-    protected lateinit var albumVersionTrackRepository: AlbumVersionTrackRepository
+    protected lateinit var trackSocialRepository: TrackSocialRepository
 
     @BeforeEach
     fun clearDatabase() {
         jdbcTemplate.execute(
             """
             TRUNCATE TABLE
-              album_version_tracks,
-              song_version_social,
-              album_version_social,
+              track_social,
+              release_social,
+              song_artists,
+              album_artists,
               artist_social,
-              song_versions,
-              album_versions,
+              tracks,
+              releases,
               songs,
               albums,
               artists
@@ -116,28 +117,28 @@ abstract class BackendControllerE2eTestSupport {
 
     protected fun createAlbum(
         artist: ArtistEntity,
+        artists: Collection<ArtistEntity> = listOf(artist),
         title: String = "Mezzanine",
         releasedAt: String? = "1998",
         imageUrl: String? = "https://example.test/album.jpg",
     ): AlbumEntity =
         albumRepository.saveAndFlush(
             AlbumEntity(
-                artist = artist,
                 title = title,
                 releasedAt = releasedAt?.let(ReleasedAt::parse),
                 imageUrl = imageUrl,
-            ),
+            ).also { it.artists.addAll(artists) },
         )
 
-    protected fun createAlbumVersion(
+    protected fun createRelease(
         album: AlbumEntity,
         title: String = "Mezzanine",
         releasedAt: String? = "1998-04-20",
-        imageUrl: String? = "https://example.test/album-version.jpg",
+        imageUrl: String? = "https://example.test/release.jpg",
         isDefault: Boolean = false,
-    ): AlbumVersionEntity =
-        albumVersionRepository.saveAndFlush(
-            AlbumVersionEntity(
+    ): ReleaseEntity =
+        releaseRepository.saveAndFlush(
+            ReleaseEntity(
                 album = album,
                 title = title,
                 releasedAt = releasedAt?.let(ReleasedAt::parse),
@@ -148,44 +149,46 @@ abstract class BackendControllerE2eTestSupport {
 
     protected fun createSong(
         artist: ArtistEntity,
+        artists: Collection<ArtistEntity> = listOf(artist),
         title: String = "Teardrop",
         releasedAt: String? = "1998-04",
     ): SongEntity =
         songRepository.saveAndFlush(
             SongEntity(
-                artist = artist,
                 title = title,
                 releasedAt = releasedAt?.let(ReleasedAt::parse),
-            ),
+            ).also { it.artists.addAll(artists) },
         )
 
-    protected fun createSongVersion(
+    protected fun createTrack(
+        release: ReleaseEntity,
         song: SongEntity,
         title: String = "Teardrop",
         durationSeconds: Int? = 330,
         releasedAt: String? = "1998-04-20",
-    ): SongVersionEntity =
-        songVersionRepository.saveAndFlush(
-            SongVersionEntity(
+        discNumber: Int = 1,
+        trackNumber: Int = 1,
+    ): TrackEntity =
+        trackRepository.saveAndFlush(
+            TrackEntity(
                 song = song,
+                release = release,
                 title = title,
                 durationSeconds = durationSeconds,
                 releasedAt = releasedAt?.let(ReleasedAt::parse),
+                discNumber = discNumber,
+                trackNumber = trackNumber,
             ),
         )
 
-    protected fun createTrack(
-        albumVersion: AlbumVersionEntity,
-        songVersion: SongVersionEntity,
-        discNumber: Int = 1,
-        trackNumber: Int = 1,
-    ): AlbumVersionTrackEntity =
-        albumVersionTrackRepository.saveAndFlush(
-            AlbumVersionTrackEntity(
-                albumVersion = albumVersion,
-                songVersion = songVersion,
-                discNumber = discNumber,
-                trackNumber = trackNumber,
+    protected fun createTrackSocial(
+        track: TrackEntity,
+        spotifyId: String = "spotify-track-id",
+    ): TrackSocialEntity =
+        trackSocialRepository.saveAndFlush(
+            TrackSocialEntity(
+                track = track,
+                spotifyId = spotifyId,
             ),
         )
 

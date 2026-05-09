@@ -1,9 +1,8 @@
 package ly.music.catalog.domain.artist
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.OneToMany
+import jakarta.persistence.ManyToMany
 import jakarta.persistence.Table
 import ly.music.catalog.domain.BaseEntity
 import ly.music.catalog.domain.album.AlbumEntity
@@ -23,10 +22,10 @@ class ArtistEntity(
     var imageUrl: String? = imageUrl
         protected set
 
-    @OneToMany(mappedBy = "artist", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @ManyToMany(mappedBy = "artists")
     var albums: MutableSet<AlbumEntity> = linkedSetOf()
 
-    @OneToMany(mappedBy = "artist", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @ManyToMany(mappedBy = "artists")
     var songs: MutableSet<SongEntity> = linkedSetOf()
 
     fun rename(name: String) {

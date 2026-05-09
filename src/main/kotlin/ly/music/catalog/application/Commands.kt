@@ -13,7 +13,7 @@ data class RenameArtistCommand(
 )
 
 data class CreateAlbumCommand(
-    val artistId: UUID,
+    val artistIds: Set<UUID>,
     val title: String,
     val releasedAt: ReleasedAt? = null,
 )
@@ -24,20 +24,20 @@ data class RenameAlbumCommand(
     val releasedAt: ReleasedAt? = null,
 )
 
-data class CreateAlbumVersionCommand(
+data class CreateReleaseCommand(
     val albumId: UUID,
     val title: String,
     val releasedAt: ReleasedAt? = null,
 )
 
-data class UpdateAlbumVersionCommand(
+data class UpdateReleaseCommand(
     val id: UUID,
     val title: String,
     val releasedAt: ReleasedAt? = null,
 )
 
 data class CreateSongCommand(
-    val artistId: UUID,
+    val artistIds: Set<UUID>,
     val title: String,
     val releasedAt: ReleasedAt? = null,
 )

@@ -1,7 +1,7 @@
 package ly.music.catalog.interfaces.rest.album
 
 import ly.music.catalog.application.AlbumService
-import ly.music.catalog.application.AlbumVersionService
+import ly.music.catalog.application.ReleaseService
 import ly.music.catalog.interfaces.rest.ResourceLinks
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

@@ -6,9 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface SongRepository : JpaRepository<SongEntity, UUID> {
-    fun existsByArtistIdAndTitleIgnoreCase(artistId: UUID, title: String): Boolean
-
-    fun findByArtistId(
+    fun findDistinctByArtistsId(
         artistId: UUID,
         pageable: Pageable,
     ): Page<SongEntity>

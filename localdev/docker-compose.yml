@@ -1,3 +1,5 @@
+name: musicly
+
 services:
   postgres:
     image: postgres:18

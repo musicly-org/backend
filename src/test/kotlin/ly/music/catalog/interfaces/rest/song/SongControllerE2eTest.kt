@@ -10,8 +10,9 @@ class SongControllerE2eTest : BackendControllerE2eTestSupport() {
     inner class GetSong {
         @Test
         fun returnsSong() {
-            val artist = createArtist()
-            val song = createSong(artist = artist)
+            val primaryArtist = createArtist()
+            val featuredArtist = createArtist(name = "Madonna")
+            val song = createSong(artist = primaryArtist, artists = listOf(primaryArtist, featuredArtist))
 
             val body = getJson("/songs/${song.id}")
 
@@ -19,8 +20,8 @@ class SongControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["title"].asText()).isEqualTo(song.title)
             assertThat(body["releasedAt"].asText()).isEqualTo(song.releasedAt?.value)
             assertThat(link(body, "self")).endsWith("/songs/${song.id}")
-            assertThat(link(body, "artist")).endsWith("/artists/${artist.id}")
-            assertThat(link(body, "song-versions")).endsWith("/songs/${song.id}/versions")
+            assertThat(link(body, "artists")).endsWith("/songs/${song.id}/artists")
+            assertThat(link(body, "tracks")).endsWith("/songs/${song.id}/tracks")
         }
     }
 }

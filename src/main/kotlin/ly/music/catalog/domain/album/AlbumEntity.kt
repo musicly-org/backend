@@ -3,13 +3,13 @@ package ly.music.catalog.domain.album
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import ly.music.catalog.domain.BaseEntity
-import ly.music.catalog.domain.albumversion.AlbumVersionEntity
+import ly.music.catalog.domain.release.ReleaseEntity
 import ly.music.catalog.domain.artist.ArtistEntity
 import ly.music.catalog.domain.normalizeRequiredText
 import ly.music.catalog.domain.release.ReleasedAt
@@ -17,9 +17,6 @@ import ly.music.catalog.domain.release.ReleasedAt
 @Entity
 @Table(name = "albums")
 class AlbumEntity(
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "artist_id")
-    var artist: ArtistEntity,
     title: String,
     releasedAt: ReleasedAt? = null,
     imageUrl: String? = null,
@@ -35,8 +32,16 @@ class AlbumEntity(
     var imageUrl: String? = imageUrl
         protected set
 
+    @ManyToMany
+    @JoinTable(
+        name = "album_artists",
+        joinColumns = [JoinColumn(name = "album_id")],
+        inverseJoinColumns = [JoinColumn(name = "artist_id")],
+    )
+    var artists: MutableSet<ArtistEntity> = linkedSetOf()
+
     @OneToMany(mappedBy = "album", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var versions: MutableSet<AlbumVersionEntity> = linkedSetOf()
+    var releases: MutableSet<ReleaseEntity> = linkedSetOf()
 
     fun updateDetails(
         title: String,

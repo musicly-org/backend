@@ -11,8 +11,8 @@ import org.springframework.hateoas.RepresentationModel
           "releasedAt": "2026-01",
           "_links": {
             "self": { "href": "/songs/00000000-0000-0000-0000-000000000004" },
-            "artist": { "href": "/artists/00000000-0000-0000-0000-000000000001" },
-            "song-versions": { "href": "/songs/00000000-0000-0000-0000-000000000004/versions" }
+            "artists": { "href": "/songs/00000000-0000-0000-0000-000000000004/artists" },
+            "tracks": { "href": "/songs/00000000-0000-0000-0000-000000000004/tracks" }
           }
         }
     """,

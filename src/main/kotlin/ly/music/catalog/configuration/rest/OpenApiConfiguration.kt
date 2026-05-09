@@ -19,7 +19,7 @@ class OpenApiConfiguration {
                 Info()
                     .title("Musicly Catalog API")
                     .version("1.0.0")
-                    .description("Domain-oriented API for artists, albums, songs, versions, and tracklists.")
+                    .description("Domain-oriented API for artists, albums, releases, songs, and tracklists.")
                     .license(License().name("Proprietary")),
             )
 
@@ -35,25 +35,23 @@ class OpenApiConfiguration {
 
             schemas["ArtistLinks"] = linksSchema("Links available on an artist resource.", "self", "albums", "songs")
             schemas["AlbumLinks"] =
-                linksSchema("Links available on an album resource.", "self", "artist", "album-versions")
-            schemas["AlbumVersionLinks"] =
-                linksSchema("Links available on an album version resource.", "self", "album", "tracks")
-            schemas["AlbumVersionTrackLinks"] =
+                linksSchema("Links available on an album resource.", "self", "artists", "releases")
+            schemas["ReleaseLinks"] =
+                linksSchema("Links available on a release resource.", "self", "album", "tracks")
+            schemas["TrackLinks"] =
                 linksSchema(
-                    "Links available on an album version track resource.",
+                    "Links available on a track resource.",
                     "self",
-                    "album-version",
-                    "song-version",
+                    "release",
+                    "song",
                 )
-            schemas["SongLinks"] = linksSchema("Links available on a song resource.", "self", "artist", "song-versions")
-            schemas["SongVersionLinks"] = linksSchema("Links available on a song version resource.", "self", "song")
+            schemas["SongLinks"] = linksSchema("Links available on a song resource.", "self", "artists", "tracks")
 
             schemas["ArtistModel"]?.properties?.set("_links", schemaRef("ArtistLinks"))
             schemas["AlbumModel"]?.properties?.set("_links", schemaRef("AlbumLinks"))
-            schemas["AlbumVersionModel"]?.properties?.set("_links", schemaRef("AlbumVersionLinks"))
-            schemas["AlbumVersionTrackModel"]?.properties?.set("_links", schemaRef("AlbumVersionTrackLinks"))
+            schemas["ReleaseModel"]?.properties?.set("_links", schemaRef("ReleaseLinks"))
             schemas["SongModel"]?.properties?.set("_links", schemaRef("SongLinks"))
-            schemas["SongVersionModel"]?.properties?.set("_links", schemaRef("SongVersionLinks"))
+            schemas["TrackModel"]?.properties?.set("_links", schemaRef("TrackLinks"))
         }
 
     private fun linksSchema(
