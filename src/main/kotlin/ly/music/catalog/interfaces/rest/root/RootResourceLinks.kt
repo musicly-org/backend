@@ -1,8 +1,8 @@
 package ly.music.catalog.interfaces.rest.root
 import ly.music.catalog.interfaces.rest.album.AlbumController
-import ly.music.catalog.interfaces.rest.release.ReleaseController
 import ly.music.catalog.interfaces.rest.artist.ArtistController
 import ly.music.catalog.interfaces.rest.pagedAssembler
+import ly.music.catalog.interfaces.rest.release.ReleaseController
 import ly.music.catalog.interfaces.rest.song.SongController
 import ly.music.catalog.interfaces.rest.track.TrackController
 import org.springframework.data.domain.Pageable
@@ -35,16 +35,10 @@ internal object RootResourceLinks {
             .templated()
             .withRel("album")
 
-    fun album(id: UUID) = linkTo(methodOn(AlbumController::class.java).getAlbum(id)).withSelfRel()
-
-    fun release(id: UUID) = linkTo(methodOn(ReleaseController::class.java).getRelease(id)).withSelfRel()
-
     fun releaseTemplate() =
         linkTo(methodOn(ReleaseController::class.java).getRelease(UUID_TEMPLATE))
             .templated()
             .withRel("release")
-
-    fun song(id: UUID) = linkTo(methodOn(SongController::class.java).getSong(id)).withSelfRel()
 
     fun songTemplate() =
         linkTo(methodOn(SongController::class.java).getSong(UUID_TEMPLATE))

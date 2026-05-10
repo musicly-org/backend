@@ -1,23 +1,22 @@
 package ly.music.catalog.interfaces.rest.track
 
 import ly.music.catalog.domain.track.TrackEntity
-import ly.music.catalog.domain.tracksocial.TrackSocialRepository
+import ly.music.catalog.domain.tracksocial.TrackSocialEntity
 import ly.music.catalog.interfaces.rest.ResourceLinks
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport
 import org.springframework.stereotype.Component
 
 @Component
-class TrackModelAssembler(
-    private val trackSocialRepository: TrackSocialRepository,
-) : RepresentationModelAssemblerSupport<TrackEntity, TrackModel>(
+class TrackModelAssembler :
+    RepresentationModelAssemblerSupport<TrackEntity, TrackModel>(
         TrackController::class.java,
         TrackModel::class.java,
     ) {
     override fun instantiateModel(entity: TrackEntity): TrackModel =
         TrackModel(
             title = entity.title,
-            imageUrl = entity.imageUrl,
-            social = trackSocialRepository.findByTrackId(entity.id)?.spotifyId?.let(::toSocialModel),
+            imageUrl = entity.imageUrl ?: entity.release.imageUrl,
+            social = entity.social?.let(::toSocialModel),
             durationSeconds = entity.durationSeconds,
             releasedAt = entity.releasedAt?.value,
             discNumber = entity.discNumber,
@@ -31,5 +30,10 @@ class TrackModelAssembler(
                 ResourceLinks.release(entity.release.id),
             )
 
-    private fun toSocialModel(spotifyId: String): SocialModel = SocialModel(spotify = spotifyId)
+    private fun toSocialModel(socialEntity: TrackSocialEntity): SocialModel =
+        with(socialEntity) {
+            SocialModel(
+                spotifyId,
+            )
+        }
 }

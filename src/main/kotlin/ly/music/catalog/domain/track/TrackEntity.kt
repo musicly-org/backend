@@ -5,12 +5,14 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import ly.music.catalog.domain.BaseEntity
 import ly.music.catalog.domain.release.ReleaseEntity
 import ly.music.catalog.domain.normalizeRequiredText
 import ly.music.catalog.domain.release.ReleasedAt
 import ly.music.catalog.domain.song.SongEntity
+import ly.music.catalog.domain.tracksocial.TrackSocialEntity
 
 @Entity
 @Table(name = "tracks")
@@ -31,6 +33,9 @@ class TrackEntity(
     @Column(name = "track_number")
     var trackNumber: Int,
 ) : BaseEntity() {
+    @OneToOne(mappedBy = "track", fetch = FetchType.LAZY)
+    var social: TrackSocialEntity? = null
+
     var title: String = normalizeTitle(title)
         protected set
 

@@ -1,12 +1,14 @@
 package ly.music.catalog
 
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.dao.DataIntegrityViolationException
 import java.util.UUID
 
 class DatabaseCascadeDeleteTest : BackendControllerE2eTestSupport() {
     @Test
-    fun deletingArtistCascadesToDependentRows() {
+    fun deletingArtistIsRejectedWhenAlbumsOrSongsStillReferenceIt() {
         val artist = createArtist()
         val album = createAlbum(artist = artist)
         val release = createRelease(album = album)
@@ -27,12 +29,14 @@ class DatabaseCascadeDeleteTest : BackendControllerE2eTestSupport() {
             "release-spotify-id",
         )
 
-        jdbcTemplate.update("delete from artists where id = ?", artist.id)
+        assertThatThrownBy {
+            jdbcTemplate.update("delete from artists where id = ?", artist.id)
+        }.isInstanceOf(DataIntegrityViolationException::class.java)
 
-        assertThat(countRows("artists")).isZero()
-        assertThat(countRows("artist_social")).isZero()
-        assertThat(countRows("album_artists")).isZero()
-        assertThat(countRows("song_artists")).isZero()
+        assertThat(countRows("artists")).isEqualTo(1)
+        assertThat(countRows("artist_social")).isEqualTo(1)
+        assertThat(countRows("album_artists")).isEqualTo(1)
+        assertThat(countRows("song_artists")).isEqualTo(1)
         assertThat(countRows("albums")).isEqualTo(1)
         assertThat(countRows("releases")).isEqualTo(1)
         assertThat(countRows("release_social")).isEqualTo(1)

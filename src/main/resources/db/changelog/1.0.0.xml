@@ -416,4 +416,33 @@
             check (track_number &gt; 0)
         </sql>
     </changeSet>
+
+    <changeSet id="15" author="codex">
+        <sql>
+            create unique index uk_releases_default_per_album
+            on releases (album_id)
+            where is_default = true
+        </sql>
+    </changeSet>
+
+    <changeSet id="16" author="codex">
+        <dropForeignKeyConstraint
+            baseTableName="album_artists"
+            constraintName="fk_album_artists_artist"/>
+        <dropForeignKeyConstraint
+            baseTableName="song_artists"
+            constraintName="fk_song_artists_artist"/>
+        <addForeignKeyConstraint
+            baseTableName="album_artists"
+            baseColumnNames="artist_id"
+            referencedTableName="artists"
+            referencedColumnNames="id"
+            constraintName="fk_album_artists_artist"/>
+        <addForeignKeyConstraint
+            baseTableName="song_artists"
+            baseColumnNames="artist_id"
+            referencedTableName="artists"
+            referencedColumnNames="id"
+            constraintName="fk_song_artists_artist"/>
+    </changeSet>
 </databaseChangeLog>

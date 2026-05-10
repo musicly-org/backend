@@ -56,10 +56,6 @@ class ReleaseEntity(
         this.isDefault = true
     }
 
-    fun clearDefault() {
-        this.isDefault = false
-    }
-
     fun hasTitle(title: String): Boolean = this.title.equals(normalizeTitle(title), ignoreCase = true)
 
     companion object {
