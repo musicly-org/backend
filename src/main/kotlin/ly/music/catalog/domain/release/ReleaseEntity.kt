@@ -7,14 +7,16 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import ly.music.catalog.domain.BaseEntity
 import ly.music.catalog.domain.album.AlbumEntity
 import ly.music.catalog.domain.normalizeRequiredText
+import ly.music.catalog.domain.releasesocial.ReleaseSocialEntity
 import ly.music.catalog.domain.track.TrackEntity
 
 @Entity
-@Table(name = "releases")
+@Table(name = "releases", schema = "catalog")
 class ReleaseEntity(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id")
@@ -42,6 +44,9 @@ class ReleaseEntity(
     @OneToMany(mappedBy = "release", cascade = [CascadeType.ALL], orphanRemoval = true)
     var tracks: MutableSet<TrackEntity> = linkedSetOf()
 
+    @OneToOne(mappedBy = "release")
+    var social: ReleaseSocialEntity? = null
+
     fun updateDetails(
         title: String,
         releasedAt: ReleasedAt?,
@@ -54,6 +59,10 @@ class ReleaseEntity(
 
     fun markAsDefault() {
         this.isDefault = true
+    }
+
+    fun clearDefault() {
+        this.isDefault = false
     }
 
     fun hasTitle(title: String): Boolean = this.title.equals(normalizeTitle(title), ignoreCase = true)

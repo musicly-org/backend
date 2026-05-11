@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface ReleaseRepository : JpaRepository<ReleaseEntity, UUID> {
+    fun findBySocialSpotifyId(spotifyId: String): ReleaseEntity?
+
     fun existsByAlbumIdAndTitleIgnoreCase(
         albumId: UUID,
         title: String,

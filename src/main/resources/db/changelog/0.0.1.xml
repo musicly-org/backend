@@ -5,9 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <!-- Core tables -->
     <changeSet id="1" author="codex">
-        <createTable tableName="artists">
+        <sql>create schema if not exists catalog</sql>
+    </changeSet>
+
+    <!-- Core tables -->
+    <changeSet id="2" author="codex">
+        <createTable tableName="artists" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -21,14 +25,20 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="2" author="codex">
-        <createTable tableName="albums">
+    <changeSet id="3" author="codex">
+        <createTable tableName="albums" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -43,14 +53,20 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="3" author="codex">
-        <createTable tableName="releases">
+    <changeSet id="4" author="codex">
+        <createTable tableName="releases" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -71,14 +87,20 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="4" author="codex">
-        <createTable tableName="songs">
+    <changeSet id="5" author="codex">
+        <createTable tableName="songs" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -92,14 +114,20 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="5" author="codex">
-        <createTable tableName="tracks">
+    <changeSet id="6" author="codex">
+        <createTable tableName="tracks" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -127,15 +155,21 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
     <!-- Social identity tables -->
-    <changeSet id="6" author="codex">
-        <createTable tableName="artist_social">
+    <changeSet id="7" author="codex">
+        <createTable tableName="artist_social" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -151,14 +185,20 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="7" author="codex">
-        <createTable tableName="release_social">
+    <changeSet id="8" author="codex">
+        <createTable tableName="release_social" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -174,14 +214,20 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="8" author="codex">
-        <createTable tableName="track_social">
+    <changeSet id="9" author="codex">
+        <createTable tableName="track_social" schemaName="catalog">
             <column name="id" type="uuid">
                 <constraints
                     nullable="false"
@@ -197,15 +243,21 @@
             <column name="created_at" type="timestamp with time zone">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
 
     <!-- Many-to-many link tables -->
-    <changeSet id="9" author="codex">
-        <createTable tableName="album_artists">
+    <changeSet id="10" author="codex">
+        <createTable tableName="album_artists" schemaName="catalog">
             <column name="album_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
@@ -215,8 +267,8 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="10" author="codex">
-        <createTable tableName="song_artists">
+    <changeSet id="11" author="codex">
+        <createTable tableName="song_artists" schemaName="catalog">
             <column name="song_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
@@ -227,7 +279,7 @@
     </changeSet>
 
     <!-- Unique constraints -->
-    <changeSet id="11" author="codex">
+    <changeSet id="12" author="codex">
         <addUniqueConstraint
             tableName="releases"
             columnNames="album_id, title"
@@ -271,7 +323,7 @@
     </changeSet>
 
     <!-- Foreign keys -->
-    <changeSet id="12" author="codex">
+    <changeSet id="13" author="codex">
         <addForeignKeyConstraint
             baseTableName="releases"
             baseColumnNames="album_id"
@@ -345,7 +397,7 @@
     </changeSet>
 
     <!-- Supporting indexes -->
-    <changeSet id="13" author="codex">
+    <changeSet id="14" author="codex">
         <createIndex tableName="releases" indexName="ix_releases_album_id">
             <column name="album_id"/>
         </createIndex>
@@ -379,7 +431,7 @@
     </changeSet>
 
     <!-- Data integrity checks -->
-    <changeSet id="14" author="codex">
+    <changeSet id="15" author="codex">
         <sql>
             alter table albums
             add constraint ck_albums_released_at_format
@@ -417,7 +469,7 @@
         </sql>
     </changeSet>
 
-    <changeSet id="15" author="codex">
+    <changeSet id="16" author="codex">
         <sql>
             create unique index uk_releases_default_per_album
             on releases (album_id)
@@ -425,7 +477,7 @@
         </sql>
     </changeSet>
 
-    <changeSet id="16" author="codex">
+    <changeSet id="17" author="codex">
         <dropForeignKeyConstraint
             baseTableName="album_artists"
             constraintName="fk_album_artists_artist"/>

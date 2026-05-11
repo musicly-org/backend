@@ -3,6 +3,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/musicly
     username: postgres
     password: postgres
+  devtools:
+    add-properties: true
 
 server:
   port: 8080

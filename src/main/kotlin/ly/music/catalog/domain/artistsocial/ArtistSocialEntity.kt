@@ -10,7 +10,7 @@ import ly.music.catalog.domain.BaseEntity
 import ly.music.catalog.domain.artist.ArtistEntity
 
 @Entity
-@Table(name = "artist_social")
+@Table(name = "artist_social", schema = "catalog")
 class ArtistSocialEntity(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "artist_id", nullable = false)

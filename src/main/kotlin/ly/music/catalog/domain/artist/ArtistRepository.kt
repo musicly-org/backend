@@ -8,6 +8,8 @@ import java.util.UUID
 interface ArtistRepository : JpaRepository<ArtistEntity, UUID> {
     fun existsByNameIgnoreCase(name: String): Boolean
 
+    fun findBySocialSpotifyId(spotifyId: String): ArtistEntity?
+
     fun findDistinctByAlbumsId(albumId: UUID, pageable: Pageable): Page<ArtistEntity>
 
     fun findDistinctBySongsId(songId: UUID, pageable: Pageable): Page<ArtistEntity>

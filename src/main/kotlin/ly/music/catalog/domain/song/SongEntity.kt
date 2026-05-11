@@ -15,7 +15,7 @@ import ly.music.catalog.domain.release.ReleasedAt
 import ly.music.catalog.domain.track.TrackEntity
 
 @Entity
-@Table(name = "songs")
+@Table(name = "songs", schema = "catalog")
 class SongEntity(
     title: String,
     releasedAt: ReleasedAt? = null,
@@ -30,6 +30,7 @@ class SongEntity(
     @ManyToMany
     @JoinTable(
         name = "song_artists",
+        schema = "catalog",
         joinColumns = [JoinColumn(name = "song_id")],
         inverseJoinColumns = [JoinColumn(name = "artist_id")],
     )

@@ -5,18 +5,35 @@ spring:
     type: caffeine
     caffeine:
       spec: maximumSize=500,expireAfterWrite=10m,recordStats
+  datasource:
+    hikari:
+      connection-init-sql: create schema if not exists catalog; create schema if not exists auth
   devtools:
-    livereload:
-      enabled: false
+    add-properties: false
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        default_schema: catalog
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: catalog
+    liquibase-schema: catalog
 
 springdoc:
   api-docs:
     path: /openapi
   swagger-ui:
     path: /swagger-ui
+
+security:
+  jwt:
+    secret: change-me-to-a-32-byte-minimum-secret-please
+    issuer: musicly-backend
+    access-token-ttl: PT12H
+  bootstrap-admin:
+    email: admin@musicly.local
+    password: change-this-admin-password
+    display-name: Super Admin

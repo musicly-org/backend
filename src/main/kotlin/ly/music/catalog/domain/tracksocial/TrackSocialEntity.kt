@@ -10,7 +10,7 @@ import ly.music.catalog.domain.BaseEntity
 import ly.music.catalog.domain.track.TrackEntity
 
 @Entity
-@Table(name = "track_social")
+@Table(name = "track_social", schema = "catalog")
 class TrackSocialEntity(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "track_id", nullable = false, unique = true)

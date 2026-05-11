@@ -2,6 +2,7 @@ package ly.music.catalog.interfaces.rest.artist
 
 import ly.music.catalog.application.ArtistService
 import ly.music.catalog.application.CreateArtistCommand
+import ly.music.catalog.application.UpdateArtistCommand
 import ly.music.catalog.domain.artist.ArtistEntity
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PagedResourcesAssembler
@@ -9,9 +10,11 @@ import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -36,10 +39,43 @@ class ArtistController(
 
     @PostMapping
     fun createArtist(
-        @RequestBody request: CreateArtistRequest,
+        @RequestBody request: CreateOrUpdateArtistRequest,
     ): ResponseEntity<ArtistModel> {
-        val artist = artistService.create(CreateArtistCommand(request.name))
+        val artist =
+            artistService.create(
+                CreateArtistCommand(
+                    name = request.name,
+                    imageUrl = request.imageUrl,
+                    spotifyId = request.spotifyId,
+                ),
+            )
         val model = artistModelAssembler.toModel(artist)
         return ResponseEntity.created(linkTo(methodOn(ArtistController::class.java).getArtistById(artist.id)).toUri()).body(model)
+    }
+
+    @PutMapping("/{id}")
+    fun updateArtist(
+        @PathVariable id: UUID,
+        @RequestBody request: CreateOrUpdateArtistRequest,
+    ): ResponseEntity<ArtistModel> =
+        ResponseEntity.ok(
+            artistModelAssembler.toModel(
+                artistService.update(
+                    UpdateArtistCommand(
+                        id = id,
+                        name = request.name,
+                        imageUrl = request.imageUrl,
+                        spotifyId = request.spotifyId,
+                    ),
+                ),
+            ),
+        )
+
+    @DeleteMapping("/{id}")
+    fun deleteArtist(
+        @PathVariable id: UUID,
+    ): ResponseEntity<Void> {
+        artistService.delete(id)
+        return ResponseEntity.noContent().build()
     }
 }

@@ -62,6 +62,8 @@ Guidelines:
 - Use one changeSet per table, constraint, index, or comparable schema operation whenever possible.
 - Keep Hibernate `ddl-auto` non-generating for real environments; migrations own schema changes.
 - With Spring Boot 4, prefer explicit dedicated starters/modules when needed for split functionality such as Liquibase and MVC test support.
+- Base persisted entities include `createdAt`, `createdBy`, `updatedAt`, and `updatedBy`.
+- Audit user values should be populated through Spring Data auditing, using the authenticated user when available and `system` otherwise.
 
 Required entities:
 
@@ -110,6 +112,8 @@ Relationship rules:
 - Do not leak database table structure into API responses.
 - Use DTOs/resource representations.
 - Include Spring HATEOAS links consistently where resources are exposed.
+- Mutating request DTOs should use link-oriented relation input through `_links` rather than raw related ids.
+- Prefer concrete request names such as `CreateOrUpdateSongRequest`; avoid alias-only request type names.
 - The API root at `/` should expose only self links for the core model resources; detailed navigation belongs on the resource representations themselves.
 - Keep the OpenAPI contract available through springdoc.
 - OpenAPI JSON path: `/openapi`.
@@ -131,6 +135,20 @@ Example:
     "self": { "href": "/artists/artist-id" },
     "albums": { "href": "/artists/artist-id/albums" },
     "songs": { "href": "/artists/artist-id/songs" }
+  }
+}
+```
+
+Mutation request example:
+
+```json
+{
+  "title": "Mezzanine",
+  "releasedAt": "1998",
+  "_links": {
+    "artists": [
+      { "href": "/artists/00000000-0000-0000-0000-000000000001" }
+    ]
   }
 }
 ```

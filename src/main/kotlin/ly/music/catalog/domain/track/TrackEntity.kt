@@ -15,7 +15,7 @@ import ly.music.catalog.domain.song.SongEntity
 import ly.music.catalog.domain.tracksocial.TrackSocialEntity
 
 @Entity
-@Table(name = "tracks")
+@Table(name = "tracks", schema = "catalog")
 class TrackEntity(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "song_id")

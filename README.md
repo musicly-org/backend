@@ -7,6 +7,7 @@ The backend is responsible for:
 - storing the catalog domain in PostgreSQL
 - enforcing business invariants at the service and database level
 - exposing stable REST resources for the frontend and other clients
+- exposing create, update, and delete operations for artists, albums, songs, releases, and tracks
 - representing discography data in domain terms instead of persistence-table terms
 
 ## Business Domain
@@ -135,6 +136,7 @@ Examples of enforced invariants:
 - positive track numbering constraints
 - validated `released_at` format
 - foreign keys for all aggregate relationships
+- audit columns for creator/updater identity on persisted rows
 
 Artist deletion behavior is also enforced at the database boundary:
 
@@ -153,6 +155,7 @@ Important flows:
 - `ReleaseService.findDefaultByAlbum`: returns the designated default release, or falls back to the first available release if needed
 - `ReleaseService.delete`: promotes another release when deleting the default release
 - `SongService.create`: resolves artist IDs and rejects empty artist sets
+- `TrackService.create` / `TrackService.update`: enforce unique track position within a release and maintain Spotify track linkage
 - `ArtistService.delete`: attempts deletion, which the database rejects if albums or songs are left without artists
 
 ## API Shape
@@ -175,10 +178,22 @@ The API is intended to describe the catalog as a graph of related resources:
 - song resources link to artists and tracks
 - track resources link back to song and release
 
+Write requests follow the same graph-oriented approach:
+
+- create and update payloads use `_links` to reference related resources
+- request DTOs derive typed convenience properties from `_links`
+- request bodies do not carry raw foreign-key ids for related catalog resources
+
 OpenAPI endpoints:
 
 - JSON: `/openapi`
 - Swagger UI: `/swagger-ui`
+
+Audit behavior:
+
+- persisted rows include `created_by` and `updated_by`
+- authenticated writes use the JWT `email` claim for auditing
+- non-authenticated/system writes fall back to `system`
 
 ## Architectural Notes
 

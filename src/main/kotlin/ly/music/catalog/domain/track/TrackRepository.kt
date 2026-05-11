@@ -8,6 +8,8 @@ import java.util.Optional
 import java.util.UUID
 
 interface TrackRepository : JpaRepository<TrackEntity, UUID> {
+    fun findBySocialSpotifyId(spotifyId: String): TrackEntity?
+
     fun existsByReleaseIdAndDiscNumberAndTrackNumber(
         releaseId: UUID,
         discNumber: Int,

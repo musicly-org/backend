@@ -1,17 +1,17 @@
 package ly.music.catalog.application
 
-import ly.music.catalog.domain.artist.ArtistRepository
-import ly.music.catalog.domain.song.SongEntity
-import ly.music.catalog.domain.song.SongRepository
 import ly.music.catalog.configuration.cache.SONGS_BY_ARTIST
 import ly.music.catalog.configuration.cache.SONG_BY_ID
 import ly.music.catalog.configuration.cache.TRACKS_BY_RELEASE
 import ly.music.catalog.configuration.cache.TRACKS_BY_SONG
 import ly.music.catalog.configuration.cache.TRACK_BY_ID
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import ly.music.catalog.domain.artist.ArtistRepository
+import ly.music.catalog.domain.song.SongEntity
+import ly.music.catalog.domain.song.SongRepository
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -41,6 +41,10 @@ class SongService(
     fun create(command: CreateSongCommand): SongEntity {
         val artists = resolveArtists(command.artistIds)
         val normalizedTitle = SongEntity.normalizeTitle(command.title)
+        require(!songRepository.existsByArtistsIdAndTitleIgnoreCase(artists.first().id, normalizedTitle)) {
+            "Song already exists for artist: $normalizedTitle"
+        }
+
         return songRepository.save(
             SongEntity(
                 title = normalizedTitle,
@@ -51,11 +55,20 @@ class SongService(
 
     @Transactional
     @CacheEvict(cacheNames = [SONGS_BY_ARTIST, SONG_BY_ID], allEntries = true)
-    fun rename(command: RenameSongCommand): SongEntity {
+    fun update(command: UpdateSongCommand): SongEntity {
         val song = findById(command.id)
+        val artists = resolveArtists(command.artistIds)
         val normalizedTitle = SongEntity.normalizeTitle(command.title)
 
+        if (!song.hasTitle(normalizedTitle) || song.artists.map { it.id }.toSet() != command.artistIds) {
+            require(!songRepository.existsByArtistsIdAndTitleIgnoreCase(artists.first().id, normalizedTitle) || song.artists.any { it.id == artists.first().id }) {
+                "Song already exists for artist: $normalizedTitle"
+            }
+        }
+
         song.updateDetails(normalizedTitle, command.releasedAt)
+        song.artists.clear()
+        song.artists.addAll(artists)
         return song
     }
 
@@ -84,7 +97,7 @@ class SongService(
     private fun resolveArtists(ids: Set<UUID>) =
         ids
             .takeIf { it.isNotEmpty() }
-            ?.let { artistRepository.findAllById(it).toSet() }
+            ?.let { artistRepository.findAllById(it).toCollection(linkedSetOf()) }
             ?.also { artists ->
                 val missingIds = ids - artists.map { it.id }.toSet()
                 require(missingIds.isEmpty()) { "Artists not found: ${missingIds.joinToString(",")}" }

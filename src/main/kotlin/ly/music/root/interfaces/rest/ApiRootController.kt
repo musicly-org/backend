@@ -1,4 +1,4 @@
-package ly.music.catalog.interfaces.rest.root
+package ly.music.root.interfaces.rest
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -11,12 +11,8 @@ class ApiRootController {
         ResponseEntity.ok(
             ApiRootModel().add(
                 RootResourceLinks.root(),
-                RootResourceLinks.artistsTemplate(),
-                RootResourceLinks.artistById(),
-                RootResourceLinks.albumTemplate(),
-                RootResourceLinks.releaseTemplate(),
-                RootResourceLinks.songTemplate(),
-                RootResourceLinks.trackTemplate(),
+                RootResourceLinks.catalogRoot(),
+                RootResourceLinks.authRoot(),
             ),
         )
 }

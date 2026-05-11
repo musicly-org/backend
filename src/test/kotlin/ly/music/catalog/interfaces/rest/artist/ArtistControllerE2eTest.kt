@@ -46,8 +46,16 @@ class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class CreateArtist {
         @Test
-        fun createsArtistAndReturnsLocation() {
+        fun rejectsAnonymousRequest() {
             val result = postJson("/artists", mapOf("name" to "Portishead"))
+
+            status().isUnauthorized().match(result)
+            assertThat(artistRepository.findAll()).isEmpty()
+        }
+
+        @Test
+        fun createsArtistAndReturnsLocationForAdmin() {
+            val result = postJsonAuthorized("/artists", mapOf("name" to "Portishead"), loginAsBootstrapAdmin())
 
             status().isCreated().match(result)
 

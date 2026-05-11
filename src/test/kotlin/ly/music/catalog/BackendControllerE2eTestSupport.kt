@@ -3,6 +3,7 @@ package ly.music.catalog
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import ly.music.auth.configuration.security.BootstrapAdminProvisioner
 import ly.music.catalog.domain.album.AlbumEntity
 import ly.music.catalog.domain.album.AlbumRepository
 import ly.music.catalog.domain.release.ReleaseEntity
@@ -61,21 +62,26 @@ abstract class BackendControllerE2eTestSupport {
     @Autowired
     protected lateinit var trackSocialRepository: TrackSocialRepository
 
+    @Autowired
+    protected lateinit var bootstrapAdminProvisioner: BootstrapAdminProvisioner
+
     @BeforeEach
     fun clearDatabase() {
         jdbcTemplate.execute(
             """
             TRUNCATE TABLE
-              track_social,
-              release_social,
-              song_artists,
-              album_artists,
-              artist_social,
-              tracks,
-              releases,
-              songs,
-              albums,
-              artists
+              catalog.track_social,
+              catalog.release_social,
+              catalog.song_artists,
+              catalog.album_artists,
+              catalog.artist_social,
+              catalog.tracks,
+              catalog.releases,
+              catalog.songs,
+              catalog.albums,
+              catalog.artists,
+              auth.user_roles,
+              auth.users
             CASCADE
             """.trimIndent(),
         )
@@ -95,6 +101,34 @@ abstract class BackendControllerE2eTestSupport {
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsBytes(payload)),
         ).andReturn()
+
+    protected fun postJsonAuthorized(
+        path: String,
+        payload: Any,
+        bearerToken: String,
+    ): MvcResult =
+        mockMvc.perform(
+            post(localUri(path))
+                .header("Authorization", "Bearer $bearerToken")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsBytes(payload)),
+        ).andReturn()
+
+    protected fun loginAsBootstrapAdmin(): String {
+        bootstrapAdminProvisioner.ensurePresent()
+
+        val response =
+            postJson(
+                "/auth/login",
+                mapOf(
+                    "email" to "admin@musicly.local",
+                    "password" to "change-this-admin-password",
+                ),
+            )
+
+        status().isOk().match(response)
+        return objectMapper.readTree(response.response.contentAsByteArray)["accessToken"].asText()
+    }
 
     private fun localUri(path: String): URI = URI.create("http://localhost:8080$path")
 
@@ -206,6 +240,10 @@ abstract class BackendControllerE2eTestSupport {
             registry.add("spring.datasource.url", postgres::getJdbcUrl)
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
+            registry.add("security.jwt.secret") { "test-jwt-secret-value-with-32-plus-bytes" }
+            registry.add("security.bootstrap-admin.email") { "admin@musicly.local" }
+            registry.add("security.bootstrap-admin.password") { "change-this-admin-password" }
+            registry.add("security.bootstrap-admin.display-name") { "Musicly Admin" }
         }
     }
 }
