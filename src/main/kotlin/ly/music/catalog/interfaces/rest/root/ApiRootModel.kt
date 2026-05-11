@@ -12,10 +12,9 @@ import org.springframework.hateoas.RepresentationModel
             "artists": { "href": "http://localhost:8080/artists" },
             "artist": { "href": "http://localhost:8080/artists/{id}" },
             "album": { "href": "http://localhost:8080/albums/{id}" },
-            "album-version": { "href": "http://localhost:8080/album-versions/{id}" },
+            "release": { "href": "http://localhost:8080/releases/{id}" },
             "track": { "href": "http://localhost:8080/tracks/{id}" },
-            "song": { "href": "http://localhost:8080/songs/{id}" },
-            "song-version": { "href": "http://localhost:8080/song-versions/{id}" }
+            "song": { "href": "http://localhost:8080/songs/{id}" }
           }
         }
     """,

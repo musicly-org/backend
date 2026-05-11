@@ -69,12 +69,11 @@ Required entities:
 ArtistEntity
 ArtistSocialEntity
 AlbumEntity
-AlbumVersionEntity
-AlbumVersionSocialEntity
+ReleaseEntity
+ReleaseSocialEntity
 SongEntity
-SongVersionEntity
-SongVersionSocialEntity
-AlbumVersionTrackEntity
+TrackEntity
+TrackSocialEntity
 ```
 
 Required value objects:
@@ -85,24 +84,25 @@ ReleasedAt
 
 Relationship rules:
 
-- `Artist` has many `Album`s.
-- `Artist` has many `Song`s.
+- `Album` has one or more `Artist`s.
+- `Song` has one or more `Artist`s.
 - `ArtistSocial` stores external identity for an `Artist`.
-- `AlbumVersionSocial` stores external identity for an `AlbumVersion`.
-- `SongVersionSocial` stores external identity for a `SongVersion`.
+- `ReleaseSocial` stores external identity for a `Release`.
+- `TrackSocial` stores external identity for a `Track`.
 - Several artists may have the same name.
 - Do not use artist name as a uniqueness boundary.
 - Spotify identity belongs in `artist_social.spotify_id`.
-- Spotify album identity belongs in `album_version_social.spotify_id`.
-- Spotify track identity belongs in `song_version_social.spotify_id`.
+- Spotify release identity belongs in `release_social.spotify_id`.
+- Spotify track identity belongs in `track_social.spotify_id`.
 - `releasedAt` stores release precision as text in `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` format.
 - Do not convert partial release dates to fake full dates.
-- `Album` has many `AlbumVersion`s.
-- Album detail requests should resolve to the default `AlbumVersion`.
-- Alternate album versions should be exposed as a separate related collection.
-- `Song` has many `SongVersion`s.
-- `AlbumVersion` links to `SongVersion` only through `AlbumVersionTrack`.
-- `AlbumVersionTrack` must include explicit track ordering.
+- `Album` has many `Release`s.
+- Album detail requests should resolve to the default `Release`.
+- Alternate releases should be exposed as a separate related collection.
+- `Song` has many `Track`s.
+- `Release` has many `Track`s.
+- Album and song resource representations should link to related artists via the `artists` relation.
+- `Track` must include explicit track ordering.
 
 ## REST API Rules
 

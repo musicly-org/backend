@@ -11,7 +11,8 @@ class SongForArtistControllerE2eTest : BackendControllerE2eTestSupport() {
         @Test
         fun returnsPagedSongs() {
             val artist = createArtist()
-            val song = createSong(artist = artist)
+            val collaborator = createArtist(name = "Madonna")
+            val song = createSong(artist = artist, artists = listOf(artist, collaborator))
 
             val body = getJson("/artists/${artist.id}/songs")
             val item = embeddedItems(body).first()
@@ -21,8 +22,21 @@ class SongForArtistControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(item["title"].asText()).isEqualTo(song.title)
             assertThat(item["releasedAt"].asText()).isEqualTo(song.releasedAt?.value)
             assertThat(link(item, "self")).endsWith("/songs/${song.id}")
-            assertThat(link(item, "artist")).endsWith("/artists/${artist.id}")
-            assertThat(link(item, "song-versions")).endsWith("/songs/${song.id}/versions")
+            assertThat(link(item, "artists")).endsWith("/songs/${song.id}/artists")
+            assertThat(link(item, "tracks")).endsWith("/songs/${song.id}/tracks")
+        }
+
+        @Test
+        fun returnsSongsForCollaboratingArtist() {
+            val primaryArtist = createArtist()
+            val collaborator = createArtist(name = "Madonna")
+            val song = createSong(artist = primaryArtist, artists = listOf(primaryArtist, collaborator))
+
+            val body = getJson("/artists/${collaborator.id}/songs")
+            val item = embeddedItems(body).first()
+
+            assertThat(body["page"]["totalElements"].asInt()).isEqualTo(1)
+            assertThat(link(item, "self")).endsWith("/songs/${song.id}")
         }
     }
 }

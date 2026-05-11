@@ -10,8 +10,9 @@ class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
     inner class GetAlbum {
         @Test
         fun returnsAlbum() {
-            val artist = createArtist()
-            val album = createAlbum(artist = artist)
+            val primaryArtist = createArtist()
+            val featuredArtist = createArtist(name = "Madonna")
+            val album = createAlbum(artist = primaryArtist, artists = listOf(primaryArtist, featuredArtist))
 
             val body = getJson("/albums/${album.id}")
 
@@ -20,8 +21,8 @@ class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["releasedAt"].asText()).isEqualTo(album.releasedAt?.value)
             assertThat(body["imageUrl"].asText()).isEqualTo(album.imageUrl)
             assertThat(link(body, "self")).endsWith("/albums/${album.id}")
-            assertThat(link(body, "artist")).endsWith("/artists/${artist.id}")
-            assertThat(link(body, "album-versions")).endsWith("/albums/${album.id}/versions")
+            assertThat(link(body, "artists")).endsWith("/albums/${album.id}/artists")
+            assertThat(link(body, "releases")).endsWith("/albums/${album.id}/releases")
         }
     }
 }

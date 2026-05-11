@@ -12,8 +12,8 @@ import org.springframework.hateoas.RepresentationModel
           "imageUrl": "https://i.scdn.co/image/example",
           "_links": {
             "self": { "href": "/albums/00000000-0000-0000-0000-000000000002" },
-            "artist": { "href": "/artists/00000000-0000-0000-0000-000000000001" },
-            "album-versions": { "href": "/albums/00000000-0000-0000-0000-000000000002/versions" }
+            "artists": { "href": "/albums/00000000-0000-0000-0000-000000000002/artists" },
+            "releases": { "href": "/albums/00000000-0000-0000-0000-000000000002/releases" }
           }
         }
     """,

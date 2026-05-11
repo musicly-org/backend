@@ -14,9 +14,8 @@ class ApiRootController {
                 RootResourceLinks.artistsTemplate(),
                 RootResourceLinks.artistById(),
                 RootResourceLinks.albumTemplate(),
-                RootResourceLinks.albumVersionTemplate(),
+                RootResourceLinks.releaseTemplate(),
                 RootResourceLinks.songTemplate(),
-                RootResourceLinks.songVersionTemplate(),
                 RootResourceLinks.trackTemplate(),
             ),
         )
