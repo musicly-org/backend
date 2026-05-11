@@ -4,6 +4,7 @@ import ly.music.catalog.BackendControllerE2eTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
@@ -23,6 +24,25 @@ class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(link(body, "self")).endsWith("/albums/${album.id}")
             assertThat(link(body, "artists")).endsWith("/albums/${album.id}/artists")
             assertThat(link(body, "releases")).endsWith("/albums/${album.id}/releases")
+        }
+    }
+
+    @Nested
+    inner class CreateAlbum {
+        @Test
+        fun returnsBadRequestWhenArtistLinksAreMissing() {
+            val result =
+                postJsonAuthorized(
+                    "/albums",
+                    mapOf(
+                        "title" to "Mezzanine",
+                        "_links" to emptyMap<String, Any>(),
+                    ),
+                    loginAsBootstrapAdmin(),
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo("Missing _links.artists")
         }
     }
 }
