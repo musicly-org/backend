@@ -5,22 +5,14 @@ spring:
     type: caffeine
     caffeine:
       spec: maximumSize=500,expireAfterWrite=10m,recordStats
-  datasource:
-    hikari:
-      connection-init-sql: create schema if not exists catalog; create schema if not exists auth
   devtools:
     add-properties: false
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-    properties:
-      hibernate:
-        default_schema: catalog
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
-    default-schema: catalog
-    liquibase-schema: catalog
 
 springdoc:
   api-docs:

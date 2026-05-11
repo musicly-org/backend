@@ -21,7 +21,7 @@ class AlbumModelAssembler :
     override fun toModel(entity: AlbumEntity): AlbumModel =
         createModelWithId(entity.id, entity)
             .add(
-                ResourceLinks.artistById(entity.artist.id).withRel("artist"),
-                ResourceLinks.albumVersions(entity.id),
+                ResourceLinks.albumArtists(entity.id),
+                ResourceLinks.releases(entity.id),
             )
 }
