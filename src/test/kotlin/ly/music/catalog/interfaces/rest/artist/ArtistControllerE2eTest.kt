@@ -10,7 +10,7 @@ class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class GetArtists {
         @Test
-        fun returnsPagedArtists() {
+        fun existingArtists_shouldReturnOk() {
             val artist = createArtist()
 
             val body = getJson("/artists")
@@ -29,7 +29,7 @@ class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class GetArtist {
         @Test
-        fun returnsArtist() {
+        fun existingArtist_shouldReturnOk() {
             val artist = createArtist()
 
             val body = getJson("/artists/${artist.id}")
@@ -46,8 +46,16 @@ class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class CreateArtist {
         @Test
-        fun createsArtistAndReturnsLocation() {
+        fun anonymousRequest_shouldReturnUnauthorized() {
             val result = postJson("/artists", mapOf("name" to "Portishead"))
+
+            status().isUnauthorized().match(result)
+            assertThat(artistRepository.findAll()).isEmpty()
+        }
+
+        @Test
+        fun adminRequest_shouldReturnCreated() {
+            val result = postJsonAuthorized("/artists", mapOf("name" to "Portishead"), loginAsBootstrapAdmin())
 
             status().isCreated().match(result)
 

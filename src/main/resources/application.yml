@@ -6,8 +6,7 @@ spring:
     caffeine:
       spec: maximumSize=500,expireAfterWrite=10m,recordStats
   devtools:
-    livereload:
-      enabled: false
+    add-properties: false
   jpa:
     hibernate:
       ddl-auto: validate
@@ -18,5 +17,17 @@ spring:
 springdoc:
   api-docs:
     path: /openapi
+    enabled: false
   swagger-ui:
     path: /swagger-ui
+    enabled: false
+
+security:
+  jwt:
+    secret: change-me-to-a-32-byte-minimum-secret-please
+    issuer: musicly-backend
+    access-token-ttl: PT12H
+  bootstrap-admin:
+    email: admin@musicly.local
+    password: change-this-admin-password
+    display-name: Super Admin

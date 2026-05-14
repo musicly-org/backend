@@ -1,8 +1,9 @@
 package ly.music.catalog.interfaces.rest.root
+
 import ly.music.catalog.interfaces.rest.album.AlbumController
 import ly.music.catalog.interfaces.rest.artist.ArtistController
-import ly.music.catalog.interfaces.rest.pagedAssembler
 import ly.music.catalog.interfaces.rest.release.ReleaseController
+import ly.music.catalog.interfaces.rest.shared.pagedAssembler
 import ly.music.catalog.interfaces.rest.song.SongController
 import ly.music.catalog.interfaces.rest.track.TrackController
 import org.springframework.data.domain.Pageable
@@ -12,10 +13,10 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import java.util.UUID
 
-internal object RootResourceLinks {
+object CatalogRootResourceLinks {
     private val UUID_TEMPLATE = UUID(0, 0)
 
-    fun root() = linkTo(methodOn(ApiRootController::class.java).getRoot()).withSelfRel()
+    fun root() = linkTo(methodOn(CatalogRootController::class.java).getRoot()).withSelfRel()
 
     fun artistsTemplate() =
         linkTo(
@@ -36,7 +37,7 @@ internal object RootResourceLinks {
             .withRel("album")
 
     fun releaseTemplate() =
-        linkTo(methodOn(ReleaseController::class.java).getRelease(UUID_TEMPLATE))
+        linkTo(methodOn(ReleaseController::class.java).findReleaseById(UUID_TEMPLATE))
             .templated()
             .withRel("release")
 

@@ -1,7 +1,7 @@
 package ly.music.catalog.interfaces.rest.album
 
 import ly.music.catalog.domain.album.AlbumEntity
-import ly.music.catalog.interfaces.rest.ResourceLinks
+import ly.music.catalog.interfaces.rest.song.ResourceLinks
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport
 import org.springframework.stereotype.Component
 

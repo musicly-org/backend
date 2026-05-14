@@ -1,8 +1,10 @@
-package ly.music.catalog.interfaces.rest.track
+package ly.music.catalog.interfaces.rest.shared
 
 import ly.music.catalog.domain.track.TrackEntity
 import ly.music.catalog.domain.tracksocial.TrackSocialEntity
-import ly.music.catalog.interfaces.rest.ResourceLinks
+import ly.music.catalog.interfaces.rest.song.ResourceLinks
+import ly.music.catalog.interfaces.rest.track.TrackController
+import ly.music.catalog.interfaces.rest.track.TrackModel
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport
 import org.springframework.stereotype.Component
 
@@ -30,9 +32,9 @@ class TrackModelAssembler :
                 ResourceLinks.release(entity.release.id),
             )
 
-    private fun toSocialModel(socialEntity: TrackSocialEntity): SocialModel =
+    private fun toSocialModel(socialEntity: TrackSocialEntity): SpotifySocialModel =
         with(socialEntity) {
-            SocialModel(
+            SpotifySocialModel(
                 spotifyId,
             )
         }

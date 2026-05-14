@@ -1,6 +1,7 @@
 package ly.music.catalog.interfaces.rest.track
 
 import io.swagger.v3.oas.annotations.media.Schema
+import ly.music.catalog.interfaces.rest.shared.SpotifySocialModel
 import org.springframework.hateoas.RepresentationModel
 
 @Schema(
@@ -27,14 +28,9 @@ import org.springframework.hateoas.RepresentationModel
 data class TrackModel(
     val title: String,
     val imageUrl: String?,
-    val social: SocialModel? = null,
+    val social: SpotifySocialModel? = null,
     val durationSeconds: Int?,
     val releasedAt: String?,
     val discNumber: Int,
     val trackNumber: Int,
 ) : RepresentationModel<TrackModel>()
-
-@Schema(description = "Track social metadata.")
-data class SocialModel(
-    val spotify: String? = null,
-)

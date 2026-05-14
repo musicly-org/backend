@@ -4,12 +4,14 @@ import ly.music.catalog.BackendControllerE2eTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class ReleaseForAlbumControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class GetReleases {
         @Test
-        fun returnsPagedReleases() {
+        fun existingAlbumReleases_shouldReturnOk() {
             val artist = createArtist()
             val album = createAlbum(artist = artist)
             val defaultRelease = createRelease(album = album, isDefault = true)
@@ -24,7 +26,10 @@ class ReleaseForAlbumControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(items.map { it["title"].asText() })
                 .containsExactlyInAnyOrder(defaultRelease.title, nonDefaultRelease.title)
             assertThat(items.map { it["releasedAt"].asText() })
-                .containsExactlyInAnyOrder(defaultRelease.releasedAt?.value ?: "", nonDefaultRelease.releasedAt?.value ?: "")
+                .containsExactlyInAnyOrder(
+                    defaultRelease.releasedAt?.value ?: "",
+                    nonDefaultRelease.releasedAt?.value ?: "",
+                )
             assertThat(items.map { it["imageUrl"].asText() })
                 .containsExactlyInAnyOrder(defaultRelease.imageUrl ?: "", nonDefaultRelease.imageUrl ?: "")
             assertThat(items.map { link(it, "self") })
@@ -36,6 +41,18 @@ class ReleaseForAlbumControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(items.map { link(it, "tracks") })
                 .anySatisfy { assertThat(it).endsWith("/releases/${defaultRelease.id}/tracks") }
                 .anySatisfy { assertThat(it).endsWith("/releases/${nonDefaultRelease.id}/tracks") }
+        }
+
+        @Test
+        fun missingAlbum_shouldReturnNotFound() {
+            val missingAlbumId = UUID.randomUUID()
+
+            val result = getResponse("/albums/$missingAlbumId/releases")
+
+            status().isNotFound().match(result)
+            assertThat(
+                objectMapper.readTree(result.response.contentAsByteArray)["message"].asText(),
+            ).isEqualTo("Album not found: $missingAlbumId")
         }
     }
 }

@@ -9,7 +9,7 @@ class SongControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class GetSong {
         @Test
-        fun returnsSong() {
+        fun existingSong_shouldReturnOk() {
             val primaryArtist = createArtist()
             val featuredArtist = createArtist(name = "Madonna")
             val song = createSong(artist = primaryArtist, artists = listOf(primaryArtist, featuredArtist))

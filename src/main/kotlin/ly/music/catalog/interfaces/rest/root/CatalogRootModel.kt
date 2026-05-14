@@ -4,11 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.hateoas.RepresentationModel
 
 @Schema(
-    description = "API root resource with self links for the catalog domain models.",
+    description = "Catalog module root resource with entry points for catalog resources.",
     example = """
         {
           "_links": {
-            "self": { "href": "/" },
+            "self": { "href": "http://localhost:8080/catalog" },
             "artists": { "href": "http://localhost:8080/artists" },
             "artist": { "href": "http://localhost:8080/artists/{id}" },
             "album": { "href": "http://localhost:8080/albums/{id}" },
@@ -19,4 +19,4 @@ import org.springframework.hateoas.RepresentationModel
         }
     """,
 )
-class ApiRootModel : RepresentationModel<ApiRootModel>()
+class CatalogRootModel : RepresentationModel<CatalogRootModel>()

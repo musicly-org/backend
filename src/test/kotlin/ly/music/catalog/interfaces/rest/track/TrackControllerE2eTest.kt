@@ -9,7 +9,7 @@ class TrackControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class GetTrack {
         @Test
-        fun returnsTrack() {
+        fun existingTrack_shouldReturnOk() {
             val artist = createArtist()
             val album = createAlbum(artist = artist)
             val release = createRelease(album = album)
