@@ -56,19 +56,8 @@ class TrackService(
         val song = songRepository.findByIdOrThrow(command.songId)
 
         command.spotifyId?.let { spotifyId ->
-            trackRepository.findBySocialSpotifyId(spotifyId)?.let { existing ->
-                existing.song = song
-                existing.release = release
-                existing.updateDetails(
-                    command.title,
-                    command.imageUrl,
-                    command.durationSeconds,
-                    command.releasedAt,
-                    command.discNumber,
-                    command.trackNumber,
-                )
-                syncSocial(existing, spotifyId)
-                return existing
+            trackRepository.findBySocialSpotifyId(spotifyId)?.let {
+                throw IllegalArgumentException("Spotify track already linked: $spotifyId")
             }
         }
 

@@ -61,7 +61,7 @@ class SongService(
         val normalizedTitle = SongEntity.normalizeTitle(command.title)
 
         if (!song.hasTitle(normalizedTitle) || song.artists.map { it.id }.toSet() != command.artistIds) {
-            require(!songRepository.existsByArtistsIdAndTitleIgnoreCase(artists.first().id, normalizedTitle) || song.artists.any { it.id == artists.first().id }) {
+            require(!songRepository.existsByArtistsIdAndTitleIgnoreCaseAndIdNot(artists.first().id, normalizedTitle, song.id)) {
                 "Song already exists for artist: $normalizedTitle"
             }
         }

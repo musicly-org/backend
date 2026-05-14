@@ -13,21 +13,3 @@ spring:
     open-in-view: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
-
-springdoc:
-  api-docs:
-    path: /openapi
-    enabled: false
-  swagger-ui:
-    path: /swagger-ui
-    enabled: false
-
-security:
-  jwt:
-    secret: change-me-to-a-32-byte-minimum-secret-please
-    issuer: musicly-backend
-    access-token-ttl: PT12H
-  bootstrap-admin:
-    email: admin@musicly.local
-    password: change-this-admin-password
-    display-name: Super Admin

@@ -16,6 +16,12 @@ interface ReleaseRepository : JpaRepository<ReleaseEntity, UUID> {
         title: String,
     ): Boolean
 
+    fun existsByAlbumIdAndTitleIgnoreCaseAndIdNot(
+        albumId: UUID,
+        title: String,
+        id: UUID,
+    ): Boolean
+
     fun findByAlbumIdAndIsDefaultTrue(albumId: UUID): ReleaseEntity?
 
     fun existsByAlbumIdAndIsDefaultTrue(albumId: UUID): Boolean

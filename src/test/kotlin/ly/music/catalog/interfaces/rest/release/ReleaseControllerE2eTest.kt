@@ -101,6 +101,31 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["default"].asBoolean()).isFalse()
             assertThat(releaseRepository.findByIdOrThrow(releaseId).isDefault).isFalse()
         }
+
+        @Test
+        fun duplicateSpotifyId_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val existingRelease = createRelease(album = album, title = "Original")
+            createReleaseSocial(release = existingRelease, spotifyId = "spotify-release-123")
+
+            val result =
+                postJsonAuthorized(
+                    "/releases",
+                    mapOf(
+                        "title" to "Deluxe Edition",
+                        "spotifyId" to "spotify-release-123",
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${album.id}")),
+                    ),
+                    token,
+                )
+
+            status().isBadRequest().match(result)
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Spotify release already linked: spotify-release-123")
+            assertThat(releaseRepository.findAll()).hasSize(1)
+        }
     }
 
     @Nested
@@ -131,6 +156,33 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["default"].asBoolean()).isTrue()
             assertThat(releaseRepository.findByIdOrThrow(defaultRelease.id).isDefault).isFalse()
             assertThat(releaseRepository.findByIdOrThrow(deluxeRelease.id).isDefault).isTrue()
+        }
+
+        @Test
+        fun conflictingSiblingTitle_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val originalRelease = createRelease(album = album, title = "Original", isDefault = true)
+            val deluxeRelease = createRelease(album = album, title = "Deluxe Edition")
+
+            val result =
+                putJsonAuthorized(
+                    "/releases/${deluxeRelease.id}",
+                    mapOf(
+                        "title" to " original ",
+                        "releasedAt" to deluxeRelease.releasedAt?.value,
+                        "imageUrl" to deluxeRelease.imageUrl,
+                        "isDefault" to false,
+                    ),
+                    token,
+                )
+
+            status().isBadRequest().match(result)
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Release already exists for album: original")
+            assertThat(releaseRepository.findByIdOrThrow(deluxeRelease.id).title).isEqualTo("Deluxe Edition")
+            assertThat(releaseRepository.findByIdOrThrow(originalRelease.id).title).isEqualTo("Original")
         }
     }
 

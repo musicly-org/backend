@@ -12,6 +12,12 @@ interface SongRepository : JpaRepository<SongEntity, UUID> {
         title: String,
     ): Boolean
 
+    fun existsByArtistsIdAndTitleIgnoreCaseAndIdNot(
+        artistId: UUID,
+        title: String,
+        id: UUID,
+    ): Boolean
+
     fun findDistinctByArtistsId(
         artistId: UUID,
         pageable: Pageable,

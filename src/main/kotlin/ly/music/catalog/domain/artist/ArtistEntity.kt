@@ -41,8 +41,6 @@ class ArtistEntity(
         this.imageUrl = imageUrl
     }
 
-    fun hasName(name: String): Boolean = this.name.equals(normalizeName(name), ignoreCase = true)
-
     companion object {
         fun normalizeName(name: String): String = normalizeRequiredText(name, "Artist name")
     }

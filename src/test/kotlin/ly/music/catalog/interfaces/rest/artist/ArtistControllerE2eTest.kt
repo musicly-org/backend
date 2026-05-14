@@ -69,5 +69,39 @@ class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(link(body, "albums")).endsWith("/artists/${createdArtist.id}/albums")
             assertThat(link(body, "songs")).endsWith("/artists/${createdArtist.id}/songs")
         }
+
+        @Test
+        fun adminRequest_withSameNameAsExistingArtist_shouldCreateDistinctArtist() {
+            createArtist(name = "Breathe")
+
+            val result = postJsonAuthorized("/artists", mapOf("name" to "  Breathe  "), loginAsBootstrapAdmin())
+
+            status().isCreated().match(result)
+            assertThat(artistRepository.findAll()).hasSize(2)
+            assertThat(artistRepository.findAll().map { it.name }).containsExactlyInAnyOrder("Breathe", "Breathe")
+        }
+    }
+
+    @Nested
+    inner class UpdateArtist {
+        @Test
+        fun adminRequest_renamingToSharedName_shouldReturnOk() {
+            val existing = createArtist(name = "Low")
+            val renamed = createArtist(name = "Low Roar")
+
+            val result =
+                putJsonAuthorized(
+                    "/artists/${renamed.id}",
+                    mapOf("name" to " Low "),
+                    loginAsBootstrapAdmin(),
+                )
+
+            status().isOk().match(result)
+
+            artistRepository.findById(renamed.id).orElseThrow().also { updated ->
+                assertThat(updated.name).isEqualTo("Low")
+            }
+            assertThat(artistRepository.findById(existing.id).orElseThrow().name).isEqualTo("Low")
+        }
     }
 }

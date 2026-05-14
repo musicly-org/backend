@@ -11,6 +11,8 @@ import ly.music.catalog.domain.artist.ArtistRepository
 import ly.music.catalog.domain.release.ReleaseEntity
 import ly.music.catalog.domain.release.ReleaseRepository
 import ly.music.catalog.domain.release.ReleasedAt
+import ly.music.catalog.domain.releasesocial.ReleaseSocialEntity
+import ly.music.catalog.domain.releasesocial.ReleaseSocialRepository
 import ly.music.catalog.domain.song.SongEntity
 import ly.music.catalog.domain.song.SongRepository
 import ly.music.catalog.domain.track.TrackEntity
@@ -54,6 +56,9 @@ abstract class BackendControllerE2eTestSupport {
 
     @Autowired
     protected lateinit var releaseRepository: ReleaseRepository
+
+    @Autowired
+    protected lateinit var releaseSocialRepository: ReleaseSocialRepository
 
     @Autowired
     protected lateinit var songRepository: SongRepository
@@ -266,6 +271,17 @@ abstract class BackendControllerE2eTestSupport {
             ),
         )
 
+    protected fun createReleaseSocial(
+        release: ReleaseEntity,
+        spotifyId: String = "spotify-release-id",
+    ): ReleaseSocialEntity =
+        releaseSocialRepository.saveAndFlush(
+            ReleaseSocialEntity(
+                release = release,
+                spotifyId = spotifyId,
+            ),
+        )
+
     companion object {
         val postgres: PostgreSQLContainer<*> =
             PostgreSQLContainer("postgres:18")
@@ -281,6 +297,8 @@ abstract class BackendControllerE2eTestSupport {
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
             registry.add("security.jwt.secret") { "test-jwt-secret-value-with-32-plus-bytes" }
+            registry.add("security.jwt.issuer") { "musicly-test" }
+            registry.add("security.jwt.access-token-ttl") { "15m" }
             registry.add("security.bootstrap-admin.email") { "admin@musicly.local" }
             registry.add("security.bootstrap-admin.password") { "change-this-admin-password" }
             registry.add("security.bootstrap-admin.display-name") { "Musicly Admin" }

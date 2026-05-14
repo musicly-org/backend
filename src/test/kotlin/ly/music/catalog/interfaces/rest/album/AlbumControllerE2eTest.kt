@@ -87,4 +87,37 @@ class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo("Missing _links.artists")
         }
     }
+
+    @Nested
+    inner class UpdateAlbum {
+        @Test
+        fun conflictingTitleForSameArtist_shouldReturnBadRequest() {
+            val artist = createArtist()
+            val original = createAlbum(artist = artist, title = "Dummy")
+            val conflicting = createAlbum(artist = artist, title = "Protection")
+
+            val result =
+                putJsonAuthorized(
+                    "/albums/${original.id}",
+                    mapOf(
+                        "title" to conflicting.title,
+                        "releasedAt" to "1994",
+                        "_links" to
+                            mapOf(
+                                "artists" to
+                                    listOf(
+                                        mapOf("href" to "http://localhost:8080/artists/${artist.id}"),
+                                    ),
+                            ),
+                    ),
+                    loginAsBootstrapAdmin(),
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Album already exists for artist: Protection",
+            )
+            assertThat(albumRepository.findById(original.id).orElseThrow().title).isEqualTo("Dummy")
+        }
+    }
 }

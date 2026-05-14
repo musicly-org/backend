@@ -32,5 +32,5 @@ interface TrackRepository : JpaRepository<TrackEntity, UUID> {
     @EntityGraph(attributePaths = ["social", "release"])
     override fun findById(id: UUID): Optional<TrackEntity>
 
-    fun findByIdOrThrow(id: UUID): TrackEntity = findById(id).orElseThrow { NotFoundException("Artist", id) }
+    fun findByIdOrThrow(id: UUID): TrackEntity = findById(id).orElseThrow { NotFoundException("Track", id) }
 }

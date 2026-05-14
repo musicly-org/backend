@@ -12,6 +12,12 @@ interface AlbumRepository : JpaRepository<AlbumEntity, UUID> {
         title: String,
     ): Boolean
 
+    fun existsByArtistsIdAndTitleIgnoreCaseAndIdNot(
+        artistId: UUID,
+        title: String,
+        id: UUID,
+    ): Boolean
+
     fun findDistinctByArtistsId(
         artistId: UUID,
         pageable: Pageable,

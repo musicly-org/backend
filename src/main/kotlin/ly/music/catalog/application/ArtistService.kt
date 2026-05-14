@@ -73,10 +73,6 @@ class ArtistService(
             }
         }
 
-        require(!artistRepository.existsByNameIgnoreCase(normalizedName)) {
-            "Artist already exists: $normalizedName"
-        }
-
         val artist = artistRepository.save(ArtistEntity(name = normalizedName, imageUrl = command.imageUrl))
         syncSocial(artist, command.spotifyId)
         return artist
@@ -87,12 +83,6 @@ class ArtistService(
     fun update(command: UpdateArtistCommand): ArtistEntity {
         val artist = findById(command.id)
         val normalizedName = ArtistEntity.normalizeName(command.name)
-
-        if (!artist.hasName(normalizedName)) {
-            require(!artistRepository.existsByNameIgnoreCase(normalizedName)) {
-                "Artist already exists: $normalizedName"
-            }
-        }
 
         command.spotifyId?.let { spotifyId ->
             artistRepository.findBySocialSpotifyId(spotifyId)?.let { existing ->

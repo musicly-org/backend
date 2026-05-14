@@ -44,7 +44,7 @@ class ReleaseService(
 
         command.spotifyId?.let { spotifyId ->
             if (releaseRepository.existsBySocialSpotifyId(spotifyId)) {
-                throw IllegalStateException("Spotify release already linked: $spotifyId")
+                throw IllegalArgumentException("Spotify release already linked: $spotifyId")
             }
         }
 
@@ -71,6 +71,12 @@ class ReleaseService(
     fun update(command: UpdateReleaseCommand): ReleaseEntity {
         val release = releaseRepository.findByIdOrThrow(command.id)
         val normalizedTitle = ReleaseEntity.normalizeTitle(command.title)
+
+        if (!release.title.equals(normalizedTitle, ignoreCase = true)) {
+            require(!releaseRepository.existsByAlbumIdAndTitleIgnoreCaseAndIdNot(release.album.id, normalizedTitle, release.id)) {
+                "Release already exists for album: $normalizedTitle"
+            }
+        }
 
         command.spotifyId?.let { spotifyId ->
             releaseRepository.findBySocialSpotifyId(spotifyId)?.let { existing ->

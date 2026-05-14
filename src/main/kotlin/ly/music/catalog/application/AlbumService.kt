@@ -76,7 +76,7 @@ class AlbumService(
         val normalizedTitle = AlbumEntity.normalizeTitle(command.title)
 
         if (!album.hasTitle(normalizedTitle) || album.artists.map { it.id }.toSet() != command.artistIds) {
-            require(!albumRepository.existsByArtistsIdAndTitleIgnoreCase(artists.first().id, normalizedTitle) || album.artists.any { it.id == artists.first().id }) {
+            require(!albumRepository.existsByArtistsIdAndTitleIgnoreCaseAndIdNot(artists.first().id, normalizedTitle, album.id)) {
                 "Album already exists for artist: $normalizedTitle"
             }
         }
