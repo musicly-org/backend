@@ -8,6 +8,8 @@ import ly.music.catalog.domain.album.AlbumEntity
 import ly.music.catalog.domain.album.AlbumRepository
 import ly.music.catalog.domain.artist.ArtistEntity
 import ly.music.catalog.domain.artist.ArtistRepository
+import ly.music.catalog.domain.artistsocial.ArtistSocialEntity
+import ly.music.catalog.domain.artistsocial.ArtistSocialRepository
 import ly.music.catalog.domain.release.ReleaseEntity
 import ly.music.catalog.domain.release.ReleaseRepository
 import ly.music.catalog.domain.release.ReleasedAt
@@ -50,6 +52,9 @@ abstract class BackendControllerE2eTestSupport {
 
     @Autowired
     protected lateinit var artistRepository: ArtistRepository
+
+    @Autowired
+    protected lateinit var artistSocialRepository: ArtistSocialRepository
 
     @Autowired
     protected lateinit var albumRepository: AlbumRepository
@@ -207,6 +212,17 @@ abstract class BackendControllerE2eTestSupport {
                 releasedAt = releasedAt?.let(ReleasedAt::parse),
                 imageUrl = imageUrl,
             ).also { it.artists.addAll(artists) },
+        )
+
+    protected fun createArtistSocial(
+        artist: ArtistEntity,
+        spotifyId: String = "spotify-artist-id",
+    ): ArtistSocialEntity =
+        artistSocialRepository.saveAndFlush(
+            ArtistSocialEntity(
+                artist = artist,
+                spotifyId = spotifyId,
+            ),
         )
 
     protected fun createRelease(

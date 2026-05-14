@@ -80,6 +80,30 @@ class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(artistRepository.findAll()).hasSize(2)
             assertThat(artistRepository.findAll().map { it.name }).containsExactlyInAnyOrder("Breathe", "Breathe")
         }
+
+        @Test
+        fun duplicateSpotifyId_shouldReturnBadRequest() {
+            val existingArtist = createArtist(name = "Portishead")
+            createArtistSocial(artist = existingArtist, spotifyId = "spotify-artist-123")
+
+            val result =
+                postJsonAuthorized(
+                    "/artists",
+                    mapOf(
+                        "name" to "Portishead Updated",
+                        "imageUrl" to "https://example.test/new.jpg",
+                        "spotifyId" to "spotify-artist-123",
+                    ),
+                    loginAsBootstrapAdmin(),
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Spotify artist already linked: spotify-artist-123",
+            )
+            assertThat(artistRepository.findAll()).hasSize(1)
+            assertThat(artistRepository.findById(existingArtist.id).orElseThrow().name).isEqualTo("Portishead")
+        }
     }
 
     @Nested

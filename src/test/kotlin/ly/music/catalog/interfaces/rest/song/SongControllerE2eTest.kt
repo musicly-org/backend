@@ -59,6 +59,35 @@ class SongControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(link(body, "artists")).endsWith("/songs/${createdSong.id}/artists")
             assertThat(link(body, "tracks")).endsWith("/songs/${createdSong.id}/tracks")
         }
+
+        @Test
+        fun collaboratorConflict_shouldReturnBadRequest() {
+            val primaryArtist = createArtist(name = "Massive Attack")
+            val collaborator = createArtist(name = "Elizabeth Fraser")
+            createSong(artist = collaborator, title = "Teardrop")
+
+            val result =
+                postJsonAuthorized(
+                    "/songs",
+                    mapOf(
+                        "title" to "Teardrop",
+                        "_links" to
+                            mapOf(
+                                "artists" to
+                                    listOf(
+                                        mapOf("href" to "http://localhost:8080/artists/${primaryArtist.id}"),
+                                        mapOf("href" to "http://localhost:8080/artists/${collaborator.id}"),
+                                    ),
+                            ),
+                    ),
+                    loginAsBootstrapAdmin(),
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Song already exists for artist: Teardrop",
+            )
+        }
     }
 
     @Nested

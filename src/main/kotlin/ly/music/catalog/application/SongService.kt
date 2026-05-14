@@ -41,7 +41,7 @@ class SongService(
     fun create(command: CreateSongCommand): SongEntity {
         val artists = resolveArtists(command.artistIds)
         val normalizedTitle = SongEntity.normalizeTitle(command.title)
-        require(!songRepository.existsByArtistsIdAndTitleIgnoreCase(artists.first().id, normalizedTitle)) {
+        require(command.artistIds.none { artistId -> songRepository.existsByArtistsIdAndTitleIgnoreCase(artistId, normalizedTitle) }) {
             "Song already exists for artist: $normalizedTitle"
         }
 
@@ -61,7 +61,11 @@ class SongService(
         val normalizedTitle = SongEntity.normalizeTitle(command.title)
 
         if (!song.hasTitle(normalizedTitle) || song.artists.map { it.id }.toSet() != command.artistIds) {
-            require(!songRepository.existsByArtistsIdAndTitleIgnoreCaseAndIdNot(artists.first().id, normalizedTitle, song.id)) {
+            require(
+                command.artistIds.none { artistId ->
+                    songRepository.existsByArtistsIdAndTitleIgnoreCaseAndIdNot(artistId, normalizedTitle, song.id)
+                },
+            ) {
                 "Song already exists for artist: $normalizedTitle"
             }
         }

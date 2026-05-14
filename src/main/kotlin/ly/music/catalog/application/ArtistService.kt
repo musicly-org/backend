@@ -39,8 +39,7 @@ class ArtistService(
 
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = [ARTIST_BY_ID], sync = true)
-    fun findById(id: UUID): ArtistEntity =
-        artistRepository.findByIdOrThrow(id)
+    fun findById(id: UUID): ArtistEntity = artistRepository.findByIdOrThrow(id)
 
     @Transactional(readOnly = true)
     fun findByAlbum(
@@ -66,10 +65,8 @@ class ArtistService(
         val normalizedName = ArtistEntity.normalizeName(command.name)
 
         command.spotifyId?.let { spotifyId ->
-            artistRepository.findBySocialSpotifyId(spotifyId)?.let { existing ->
-                existing.updateDetails(normalizedName, command.imageUrl ?: existing.imageUrl)
-                syncSocial(existing, spotifyId)
-                return existing
+            artistRepository.findBySocialSpotifyId(spotifyId)?.let {
+                throw IllegalArgumentException("Spotify artist already linked: $spotifyId")
             }
         }
 
@@ -81,7 +78,7 @@ class ArtistService(
     @Transactional
     @CacheEvict(cacheNames = [ARTIST_PAGES, ARTIST_BY_ID], allEntries = true)
     fun update(command: UpdateArtistCommand): ArtistEntity {
-        val artist = findById(command.id)
+        val artist = artistRepository.findByIdOrThrow(command.id)
         val normalizedName = ArtistEntity.normalizeName(command.name)
 
         command.spotifyId?.let { spotifyId ->
@@ -114,7 +111,7 @@ class ArtistService(
         allEntries = true,
     )
     fun delete(id: UUID) {
-        val artist = findById(id)
+        val artist = artistRepository.findByIdOrThrow(id)
         artistRepository.delete(artist)
     }
 

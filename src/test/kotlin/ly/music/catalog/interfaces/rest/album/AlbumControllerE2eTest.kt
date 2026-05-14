@@ -86,6 +86,35 @@ class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
             status().isBadRequest().match(result)
             assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo("Missing _links.artists")
         }
+
+        @Test
+        fun collaboratorConflict_shouldReturnBadRequest() {
+            val primaryArtist = createArtist(name = "Massive Attack")
+            val collaborator = createArtist(name = "Tracey Thorn")
+            createAlbum(artist = collaborator, title = "Protection")
+
+            val result =
+                postJsonAuthorized(
+                    "/albums",
+                    mapOf(
+                        "title" to "Protection",
+                        "_links" to
+                            mapOf(
+                                "artists" to
+                                    listOf(
+                                        mapOf("href" to "http://localhost:8080/artists/${primaryArtist.id}"),
+                                        mapOf("href" to "http://localhost:8080/artists/${collaborator.id}"),
+                                    ),
+                            ),
+                    ),
+                    loginAsBootstrapAdmin(),
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Album already exists for artist: Protection",
+            )
+        }
     }
 
     @Nested

@@ -15,14 +15,16 @@ class BootstrapAdminProvisioner(
     private val passwordEncoder: PasswordEncoder,
 ) {
     fun ensurePresent(): UserEntity {
-        val email = bootstrapAdminProperties.email.trim().lowercase()
+        check(bootstrapAdminProperties.isConfigured()) { "Bootstrap admin is not fully configured" }
+
+        val email = requireNotNull(bootstrapAdminProperties.email).trim().lowercase()
         userRepository.findByEmail(email)?.let { return it }
 
         return userRepository.saveAndFlush(
             UserEntity(
                 email = email,
-                passwordHash = requireNotNull(passwordEncoder.encode(bootstrapAdminProperties.password)),
-                displayName = bootstrapAdminProperties.displayName,
+                passwordHash = requireNotNull(passwordEncoder.encode(requireNotNull(bootstrapAdminProperties.password))),
+                displayName = requireNotNull(bootstrapAdminProperties.displayName),
                 enabled = true,
             ).also { it.roles += UserRole.SUPER_ADMIN },
         )
@@ -31,9 +33,12 @@ class BootstrapAdminProvisioner(
     @Component
     class Initializer(
         private val bootstrapAdminProvisioner: BootstrapAdminProvisioner,
+        private val bootstrapAdminProperties: BootstrapAdminProperties,
     ) : ApplicationRunner {
         override fun run(args: ApplicationArguments) {
-            bootstrapAdminProvisioner.ensurePresent()
+            if (bootstrapAdminProperties.isConfigured()) {
+                bootstrapAdminProvisioner.ensurePresent()
+            }
         }
     }
 }

@@ -44,7 +44,7 @@ class AlbumService(
     fun create(command: CreateAlbumCommand): AlbumEntity {
         val artists = resolveArtists(command.artistIds)
         val normalizedTitle = AlbumEntity.normalizeTitle(command.title)
-        require(!albumRepository.existsByArtistsIdAndTitleIgnoreCase(artists.first().id, normalizedTitle)) {
+        require(command.artistIds.none { artistId -> albumRepository.existsByArtistsIdAndTitleIgnoreCase(artistId, normalizedTitle) }) {
             "Album already exists for artist: $normalizedTitle"
         }
 
@@ -76,7 +76,11 @@ class AlbumService(
         val normalizedTitle = AlbumEntity.normalizeTitle(command.title)
 
         if (!album.hasTitle(normalizedTitle) || album.artists.map { it.id }.toSet() != command.artistIds) {
-            require(!albumRepository.existsByArtistsIdAndTitleIgnoreCaseAndIdNot(artists.first().id, normalizedTitle, album.id)) {
+            require(
+                command.artistIds.none { artistId ->
+                    albumRepository.existsByArtistsIdAndTitleIgnoreCaseAndIdNot(artistId, normalizedTitle, album.id)
+                },
+            ) {
                 "Album already exists for artist: $normalizedTitle"
             }
         }
