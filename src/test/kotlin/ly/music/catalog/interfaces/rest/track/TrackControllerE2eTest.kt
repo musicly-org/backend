@@ -70,5 +70,98 @@ class TrackControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(trackRepository.findAll()).hasSize(1)
             assertThat(trackRepository.findByIdOrThrow(existingTrack.id).trackNumber).isEqualTo(1)
         }
+
+        @Test
+        fun nonPositiveDiscNumber_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val release = createRelease(album = album)
+            val song = createSong(artist = artist)
+
+            val result =
+                postJsonAuthorized(
+                    "/tracks",
+                    mapOf(
+                        "title" to "Teardrop",
+                        "durationSeconds" to 330,
+                        "discNumber" to 0,
+                        "trackNumber" to 1,
+                        "_links" to
+                            mapOf(
+                                "song" to mapOf("href" to "/songs/${song.id}"),
+                                "release" to mapOf("href" to "/releases/${release.id}"),
+                            ),
+                    ),
+                    token,
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Track discNumber must be greater than 0",
+            )
+        }
+
+        @Test
+        fun nonPositiveDurationSeconds_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val release = createRelease(album = album)
+            val song = createSong(artist = artist)
+
+            val result =
+                postJsonAuthorized(
+                    "/tracks",
+                    mapOf(
+                        "title" to "Teardrop",
+                        "durationSeconds" to 0,
+                        "discNumber" to 1,
+                        "trackNumber" to 1,
+                        "_links" to
+                            mapOf(
+                                "song" to mapOf("href" to "/songs/${song.id}"),
+                                "release" to mapOf("href" to "/releases/${release.id}"),
+                            ),
+                    ),
+                    token,
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Track durationSeconds must be greater than 0",
+            )
+        }
+
+        @Test
+        fun nonPositiveTrackNumber_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val release = createRelease(album = album)
+            val song = createSong(artist = artist)
+
+            val result =
+                postJsonAuthorized(
+                    "/tracks",
+                    mapOf(
+                        "title" to "Teardrop",
+                        "durationSeconds" to 330,
+                        "discNumber" to 1,
+                        "trackNumber" to 0,
+                        "_links" to
+                            mapOf(
+                                "song" to mapOf("href" to "/songs/${song.id}"),
+                                "release" to mapOf("href" to "/releases/${release.id}"),
+                            ),
+                    ),
+                    token,
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Track trackNumber must be greater than 0",
+            )
+        }
     }
 }

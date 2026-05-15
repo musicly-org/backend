@@ -70,6 +70,7 @@ class ReleaseService(
     @CacheEvict(cacheNames = [RELEASES_BY_ALBUM, RELEASE_DEFAULT_BY_ALBUM, RELEASE_BY_ID], allEntries = true)
     fun update(command: UpdateReleaseCommand): ReleaseEntity {
         val release = releaseRepository.findByIdOrThrow(command.id)
+        require(release.album.id == command.albumId) { "Release album cannot change" }
         val normalizedTitle = ReleaseEntity.normalizeTitle(command.title)
 
         if (!release.title.equals(normalizedTitle, ignoreCase = true)) {

@@ -50,6 +50,7 @@ data class CreateReleaseCommand(
 
 data class UpdateReleaseCommand(
     val id: UUID,
+    val albumId: UUID,
     val title: String,
     val releasedAt: ReleasedAt? = null,
     val imageUrl: String? = null,
@@ -58,6 +59,7 @@ data class UpdateReleaseCommand(
 ) {
     constructor(id: UUID, request: CreateOrUpdateReleaseRequest) : this(
         id = id,
+        albumId = request.album.uuid(),
         title = request.title,
         releasedAt = ReleasedAt.parseOrNull(request.releasedAt),
         imageUrl = request.imageUrl,

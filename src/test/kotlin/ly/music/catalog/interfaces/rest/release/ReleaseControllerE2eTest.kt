@@ -156,6 +156,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
                         "releasedAt" to deluxeRelease.releasedAt?.value,
                         "imageUrl" to deluxeRelease.imageUrl,
                         "isDefault" to true,
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${album.id}")),
                     ),
                     token,
                 )
@@ -184,6 +185,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
                         "releasedAt" to deluxeRelease.releasedAt?.value,
                         "imageUrl" to deluxeRelease.imageUrl,
                         "isDefault" to false,
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${album.id}")),
                     ),
                     token,
                 )
@@ -193,6 +195,33 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["message"].asText()).isEqualTo("Release already exists for album: original")
             assertThat(releaseRepository.findByIdOrThrow(deluxeRelease.id).title).isEqualTo("Deluxe Edition")
             assertThat(releaseRepository.findByIdOrThrow(originalRelease.id).title).isEqualTo("Original")
+        }
+
+        @Test
+        fun conflictingAlbumLink_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val anotherAlbum = createAlbum(artist = artist, title = "100th Window")
+            val release = createRelease(album = album, title = "Original")
+
+            val result =
+                putJsonAuthorized(
+                    "/releases/${release.id}",
+                    mapOf(
+                        "title" to release.title,
+                        "releasedAt" to release.releasedAt?.value,
+                        "imageUrl" to release.imageUrl,
+                        "isDefault" to false,
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${anotherAlbum.id}")),
+                    ),
+                    token,
+                )
+
+            status().isBadRequest().match(result)
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Release album cannot change")
+            assertThat(releaseRepository.findByIdOrThrow(release.id).album.id).isEqualTo(album.id)
         }
     }
 
