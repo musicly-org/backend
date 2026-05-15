@@ -68,9 +68,16 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             status().isCreated().match(result)
             val location = requireNotNull(result.response.getHeader("Location"))
             val releaseId = UUID.fromString(location.substringAfterLast("/"))
-            val body = getJson("/releases/$releaseId")
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
 
+            assertNoId(body)
+            assertThat(body["title"].asText()).isEqualTo("Original")
+            assertThat(body["releasedAt"].asText()).isEqualTo("1998-04-20")
+            assertThat(body["imageUrl"].asText()).isEqualTo("https://example.test/original.jpg")
             assertThat(body["default"].asBoolean()).isTrue()
+            assertThat(link(body, "self")).endsWith("/releases/$releaseId")
+            assertThat(link(body, "album")).endsWith("/albums/${album.id}")
+            assertThat(link(body, "tracks")).endsWith("/releases/$releaseId/tracks")
             assertThat(releaseRepository.findByIdOrThrow(releaseId).isDefault).isTrue()
         }
 
@@ -96,9 +103,12 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             status().isCreated().match(result)
             val location = requireNotNull(result.response.getHeader("Location"))
             val releaseId = UUID.fromString(location.substringAfterLast("/"))
-            val body = getJson("/releases/$releaseId")
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
 
+            assertNoId(body)
+            assertThat(body["title"].asText()).isEqualTo("Original")
             assertThat(body["default"].asBoolean()).isFalse()
+            assertThat(link(body, "self")).endsWith("/releases/$releaseId")
             assertThat(releaseRepository.findByIdOrThrow(releaseId).isDefault).isFalse()
         }
 

@@ -34,7 +34,7 @@ class ReleaseController(
         val release = releaseService.create(CreateReleaseCommand(request))
         return ResponseEntity
             .created(linkTo(methodOn(ReleaseController::class.java).findReleaseById(release.id)).toUri())
-            .build()
+            .body(releaseModelAssembler.toModel(release))
     }
 
     @PutMapping("/{id}")

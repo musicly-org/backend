@@ -115,6 +115,31 @@ class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
                 "Album already exists for artist: Protection",
             )
         }
+
+        @Test
+        fun malformedArtistLink_shouldReturnBadRequest() {
+            val artist = createArtist()
+
+            val result =
+                postJsonAuthorized(
+                    "/albums",
+                    mapOf(
+                        "title" to "Mezzanine",
+                        "_links" to
+                            mapOf(
+                                "artists" to
+                                    listOf(
+                                        mapOf("href" to "http://localhost:8080/artists/${artist.id}"),
+                                        emptyMap<String, Any>(),
+                                    ),
+                            ),
+                    ),
+                    loginAsBootstrapAdmin(),
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo("Invalid _links.artists")
+        }
     }
 
     @Nested

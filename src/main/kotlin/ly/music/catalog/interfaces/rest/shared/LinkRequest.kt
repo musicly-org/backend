@@ -15,7 +15,15 @@ abstract class LinkRequest {
 
     protected fun requiredLinkList(name: String): List<RequestLink> =
         (links?.get(name) as? List<*>)
-            ?.mapNotNull { node -> (node as? Map<*, *>)?.get("href")?.toString()?.let(::RequestLink) }
             ?.takeIf { it.isNotEmpty() }
+            ?.map { node ->
+                val href =
+                    (node as? Map<*, *>)
+                        ?.get("href")
+                        ?.toString()
+                        ?.takeIf { it.isNotBlank() }
+                        ?: throw IllegalArgumentException("Invalid _links.$name")
+                RequestLink(href)
+            }
             ?: throw IllegalArgumentException("Missing _links.$name")
 }
