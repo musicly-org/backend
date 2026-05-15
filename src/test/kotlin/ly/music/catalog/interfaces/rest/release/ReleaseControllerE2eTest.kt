@@ -22,7 +22,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["title"].asText()).isEqualTo(release.title)
             assertThat(body["releasedAt"].asText()).isEqualTo(release.releasedAt?.value)
             assertThat(body["imageUrl"].asText()).isEqualTo(release.imageUrl)
-            assertThat(body["default"].asBoolean()).isTrue()
+            assertThat(body["isDefault"].asBoolean()).isTrue()
             assertThat(link(body, "self")).endsWith("/releases/${release.id}")
             assertThat(link(body, "album")).endsWith("/albums/${album.id}")
             assertThat(link(body, "tracks")).endsWith("/releases/${release.id}/tracks")
@@ -74,7 +74,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["title"].asText()).isEqualTo("Original")
             assertThat(body["releasedAt"].asText()).isEqualTo("1998-04-20")
             assertThat(body["imageUrl"].asText()).isEqualTo("https://example.test/original.jpg")
-            assertThat(body["default"].asBoolean()).isTrue()
+            assertThat(body["isDefault"].asBoolean()).isTrue()
             assertThat(link(body, "self")).endsWith("/releases/$releaseId")
             assertThat(link(body, "album")).endsWith("/albums/${album.id}")
             assertThat(link(body, "tracks")).endsWith("/releases/$releaseId/tracks")
@@ -107,7 +107,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
 
             assertNoId(body)
             assertThat(body["title"].asText()).isEqualTo("Original")
-            assertThat(body["default"].asBoolean()).isFalse()
+            assertThat(body["isDefault"].asBoolean()).isFalse()
             assertThat(link(body, "self")).endsWith("/releases/$releaseId")
             assertThat(releaseRepository.findByIdOrThrow(releaseId).isDefault).isFalse()
         }
@@ -164,7 +164,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             status().isOk().match(result)
             val body = objectMapper.readTree(result.response.contentAsByteArray)
 
-            assertThat(body["default"].asBoolean()).isTrue()
+            assertThat(body["isDefault"].asBoolean()).isTrue()
             assertThat(releaseRepository.findByIdOrThrow(defaultRelease.id).isDefault).isFalse()
             assertThat(releaseRepository.findByIdOrThrow(deluxeRelease.id).isDefault).isTrue()
         }
@@ -243,7 +243,23 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(releaseRepository.findByIdOrThrow(deluxeRelease.id).isDefault).isTrue()
 
             val body = getJson("/releases/${deluxeRelease.id}")
-            assertThat(body["default"].asBoolean()).isTrue()
+            assertThat(body["isDefault"].asBoolean()).isTrue()
+        }
+
+        @Test
+        fun deleteSpotifyLinkedRelease_shouldReturnNoContent() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val originalRelease = createRelease(album = album, title = "Original", releasedAt = "1998-04-20", isDefault = true)
+            val spotifyLinkedRelease = createRelease(album = album, title = "Deluxe Edition", releasedAt = "1998-05-01")
+            createReleaseSocial(release = spotifyLinkedRelease, spotifyId = "spotify-release-linked")
+
+            val result = deleteAuthorized("/releases/${spotifyLinkedRelease.id}", token)
+
+            status().isNoContent().match(result)
+            assertThat(releaseRepository.findById(spotifyLinkedRelease.id)).isEmpty
+            assertThat(releaseRepository.findByIdOrThrow(originalRelease.id).isDefault).isTrue()
         }
 
         @Test
@@ -261,7 +277,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(releaseRepository.findByIdOrThrow(onlyRelease.id).isDefault).isTrue()
 
             val releaseBody = getJson("/releases/${onlyRelease.id}")
-            assertThat(releaseBody["default"].asBoolean()).isTrue()
+            assertThat(releaseBody["isDefault"].asBoolean()).isTrue()
         }
     }
 }

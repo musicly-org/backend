@@ -98,6 +98,7 @@ class ReleaseService(
         if (releaseRepository.countByAlbumId(release.album.id) == 1) {
             throw IllegalArgumentException("Cannot delete an only release for album")
         }
+        releaseSocialRepository.deleteByReleaseId(release.id)
         releaseRepository.delete(release)
         if (release.isDefault) {
             updateDefault(release.album.id)

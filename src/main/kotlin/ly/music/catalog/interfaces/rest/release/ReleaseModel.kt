@@ -1,5 +1,6 @@
 package ly.music.catalog.interfaces.rest.release
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import ly.music.catalog.interfaces.rest.shared.SpotifySocialModel
 import org.springframework.hateoas.RepresentationModel
@@ -28,5 +29,6 @@ data class ReleaseModel(
     val releasedAt: String?,
     val imageUrl: String?,
     val social: SpotifySocialModel? = null,
+    @get:JsonProperty("isDefault")
     val isDefault: Boolean,
 ) : RepresentationModel<ReleaseModel>()
