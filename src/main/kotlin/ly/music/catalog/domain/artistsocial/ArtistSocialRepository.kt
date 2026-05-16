@@ -5,4 +5,6 @@ import java.util.UUID
 
 interface ArtistSocialRepository : JpaRepository<ArtistSocialEntity, UUID> {
     fun findBySpotifyId(spotifyId: String): ArtistSocialEntity?
+
+    fun deleteByArtistId(artistId: UUID)
 }

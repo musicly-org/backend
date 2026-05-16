@@ -29,7 +29,7 @@ class ReleaseController(
 
     @PostMapping
     fun createRelease(
-        @RequestBody request: CreateOrUpdateReleaseRequest,
+        @RequestBody request: CreateReleaseRequest,
     ): ResponseEntity<ReleaseModel> {
         val release = releaseService.create(CreateReleaseCommand(request))
         return ResponseEntity
@@ -40,7 +40,7 @@ class ReleaseController(
     @PutMapping("/{id}")
     fun updateRelease(
         @PathVariable id: UUID,
-        @RequestBody request: CreateOrUpdateReleaseRequest,
+        @RequestBody request: UpdateReleaseRequest,
     ): ResponseEntity<ReleaseModel> =
         ResponseEntity.ok(
             releaseModelAssembler.toModel(releaseService.update(UpdateReleaseCommand(id, request))),

@@ -11,6 +11,8 @@ import java.util.UUID
 interface TrackRepository : JpaRepository<TrackEntity, UUID> {
     fun findBySocialSpotifyId(spotifyId: String): TrackEntity?
 
+    fun existsByReleaseId(releaseId: UUID): Boolean
+
     fun existsByReleaseIdAndDiscNumberAndTrackNumber(
         releaseId: UUID,
         discNumber: Int,

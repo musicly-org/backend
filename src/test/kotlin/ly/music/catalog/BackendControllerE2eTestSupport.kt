@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import ly.music.auth.configuration.security.BootstrapAdminProvisioner
+import ly.music.auth.configuration.security.JwtProperties
 import ly.music.catalog.domain.album.AlbumEntity
 import ly.music.catalog.domain.album.AlbumRepository
 import ly.music.catalog.domain.artist.ArtistEntity
@@ -27,6 +28,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm
+import org.springframework.security.oauth2.jwt.JwtClaimsSet
+import org.springframework.security.oauth2.jwt.JwtEncoder
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters
+import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
@@ -38,6 +44,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.testcontainers.containers.PostgreSQLContainer
 import java.net.URI
+import java.time.Clock
+import java.time.Instant
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -76,6 +84,15 @@ abstract class BackendControllerE2eTestSupport {
 
     @Autowired
     protected lateinit var bootstrapAdminProvisioner: BootstrapAdminProvisioner
+
+    @Autowired
+    protected lateinit var jwtEncoder: JwtEncoder
+
+    @Autowired
+    protected lateinit var jwtProperties: JwtProperties
+
+    @Autowired
+    protected lateinit var clock: Clock
 
     @BeforeEach
     fun clearDatabase() {
@@ -175,6 +192,35 @@ abstract class BackendControllerE2eTestSupport {
 
         status().isOk().match(response)
         return objectMapper.readTree(response.response.contentAsByteArray)["accessToken"].asText()
+    }
+
+    protected fun issueTestToken(
+        issuer: String = jwtProperties.issuer,
+        subject: String = "00000000-0000-0000-0000-000000000001",
+        permissions: List<String> = listOf("catalog:write"),
+        roles: List<String> = listOf("SUPER_ADMIN"),
+    ): String {
+        val issuedAt = Instant.now(clock)
+        val claims =
+            JwtClaimsSet
+                .builder()
+                .issuer(issuer)
+                .issuedAt(issuedAt)
+                .expiresAt(issuedAt.plusSeconds(900))
+                .subject(subject)
+                .claim("email", "admin@musicly.local")
+                .claim("displayName", "Musicly Admin")
+                .claim("roles", roles)
+                .claim("permissions", permissions)
+                .build()
+
+        return jwtEncoder
+            .encode(
+                JwtEncoderParameters.from(
+                    JwsHeader.with(MacAlgorithm.HS256).build(),
+                    claims,
+                ),
+            ).tokenValue
     }
 
     private fun localUri(path: String): URI = URI.create("http://localhost:8080$path")

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface SongRepository : JpaRepository<SongEntity, UUID> {
+    fun existsByArtistsId(artistId: UUID): Boolean
+
     fun existsByArtistsIdAndTitleIgnoreCase(
         artistId: UUID,
         title: String,

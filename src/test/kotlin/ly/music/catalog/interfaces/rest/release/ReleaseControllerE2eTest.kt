@@ -136,6 +136,27 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["message"].asText()).isEqualTo("Spotify release already linked: spotify-release-123")
             assertThat(releaseRepository.findAll()).hasSize(1)
         }
+
+        @Test
+        fun updateOnlyFieldIsDefault_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+
+            val result =
+                postJsonAuthorized(
+                    "/releases",
+                    mapOf(
+                        "title" to "Original",
+                        "isDefault" to true,
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${album.id}")),
+                    ),
+                    token,
+                )
+
+            status().isBadRequest().match(result)
+            assertThat(releaseRepository.findAll()).isEmpty()
+        }
     }
 
     @Nested
@@ -227,6 +248,28 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
 
     @Nested
     inner class DeleteRelease {
+        @Test
+        fun deleteReleaseWithTracks_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val originalRelease = createRelease(album = album, title = "Original", releasedAt = "1998-04-20", isDefault = true)
+            val releaseWithTracks = createRelease(album = album, title = "Deluxe Edition", releasedAt = "1998-05-01")
+            val song = createSong(artist = artist)
+            createTrack(release = releaseWithTracks, song = song)
+            createReleaseSocial(release = releaseWithTracks, spotifyId = "spotify-release-linked")
+
+            val result = deleteAuthorized("/releases/${releaseWithTracks.id}", token)
+
+            status().isBadRequest().match(result)
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Cannot delete a release that still has tracks")
+            assertThat(releaseRepository.findByIdOrThrow(releaseWithTracks.id).isDefault).isFalse()
+            assertThat(releaseSocialRepository.findBySpotifyId("spotify-release-linked")).isNotNull()
+            assertThat(trackRepository.findByReleaseId(releaseWithTracks.id, org.springframework.data.domain.Pageable.unpaged()).totalElements).isEqualTo(1)
+            assertThat(releaseRepository.findByIdOrThrow(originalRelease.id).isDefault).isTrue()
+        }
+
         @Test
         fun deleteCurrentDefaultWithAlternativeRelease_shouldReturnNoContent() {
             val token = loginAsBootstrapAdmin()

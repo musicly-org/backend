@@ -112,6 +112,10 @@ class ArtistService(
     )
     fun delete(id: UUID) {
         val artist = artistRepository.findByIdOrThrow(id)
+        if (albumRepository.existsByArtistsId(artist.id) || songRepository.existsByArtistsId(artist.id)) {
+            throw IllegalArgumentException("Cannot delete an artist that is still referenced by albums or songs")
+        }
+        artistSocialRepository.deleteByArtistId(artist.id)
         artistRepository.delete(artist)
     }
 

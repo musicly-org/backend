@@ -8,6 +8,7 @@ import ly.music.catalog.domain.release.ReleaseEntity
 import ly.music.catalog.domain.release.ReleaseRepository
 import ly.music.catalog.domain.releasesocial.ReleaseSocialEntity
 import ly.music.catalog.domain.releasesocial.ReleaseSocialRepository
+import ly.music.catalog.domain.track.TrackRepository
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
@@ -20,6 +21,7 @@ import java.util.UUID
 class ReleaseService(
     private val releaseRepository: ReleaseRepository,
     private val releaseSocialRepository: ReleaseSocialRepository,
+    private val trackRepository: TrackRepository,
     private val albumRepository: AlbumRepository,
 ) {
     @Transactional(readOnly = true)
@@ -97,6 +99,9 @@ class ReleaseService(
         val release = releaseRepository.findByIdOrThrow(id)
         if (releaseRepository.countByAlbumId(release.album.id) == 1) {
             throw IllegalArgumentException("Cannot delete an only release for album")
+        }
+        if (trackRepository.existsByReleaseId(release.id)) {
+            throw IllegalArgumentException("Cannot delete a release that still has tracks")
         }
         releaseSocialRepository.deleteByReleaseId(release.id)
         releaseRepository.delete(release)

@@ -116,7 +116,12 @@ Relationship rules:
 - Include Spring HATEOAS links consistently where resources are exposed.
 - Mutating request DTOs should use link-oriented relation input through `_links` rather than raw related ids.
 - Prefer concrete request names such as `CreateOrUpdateSongRequest`; avoid alias-only request type names.
-- The API root at `/` should expose only self links for the core model resources; detailed navigation belongs on the resource representations themselves.
+- The API root at `/` is a top-level module entry point and currently exposes:
+  - `self`
+  - `catalog`
+  - `auth`
+- The catalog module root at `/catalog` exposes the catalog entry points for core model resources such as `artists`, `artist`, `album`, `release`, `song`, and `track`.
+- Keep documentation and tests aligned with this split between the global API root and the catalog module root.
 - Keep the OpenAPI contract available through springdoc.
 - OpenAPI JSON path: `/openapi`.
 - Swagger UI path: `/swagger-ui`, with `/swagger-ui/` redirecting to `/swagger-ui/index.html`.

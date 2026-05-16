@@ -8,6 +8,22 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
+    inner class Authorization {
+        @Test
+        fun wrongIssuerToken_shouldReturnUnauthorized() {
+            val result =
+                postJsonAuthorized(
+                    "/artists",
+                    mapOf("name" to "Portishead"),
+                    issueTestToken(issuer = "foreign-environment"),
+                )
+
+            status().isUnauthorized().match(result)
+            assertThat(artistRepository.findAll()).isEmpty()
+        }
+    }
+
+    @Nested
     inner class GetArtists {
         @Test
         fun existingArtists_shouldReturnOk() {
@@ -126,6 +142,38 @@ class ArtistControllerE2eTest : BackendControllerE2eTestSupport() {
                 assertThat(updated.name).isEqualTo("Low")
             }
             assertThat(artistRepository.findById(existing.id).orElseThrow().name).isEqualTo("Low")
+        }
+    }
+
+    @Nested
+    inner class DeleteArtist {
+        @Test
+        fun referencedArtist_shouldReturnBadRequest() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            createAlbum(artist = artist)
+            createSong(artist = artist)
+
+            val result = deleteAuthorized("/artists/${artist.id}", token)
+
+            status().isBadRequest().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo(
+                "Cannot delete an artist that is still referenced by albums or songs",
+            )
+            assertThat(artistRepository.findById(artist.id)).isPresent
+        }
+
+        @Test
+        fun spotifyLinkedStandaloneArtist_shouldReturnNoContent() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            createArtistSocial(artist = artist, spotifyId = "spotify-artist-delete")
+
+            val result = deleteAuthorized("/artists/${artist.id}", token)
+
+            status().isNoContent().match(result)
+            assertThat(artistRepository.findById(artist.id)).isEmpty
+            assertThat(artistSocialRepository.findBySpotifyId("spotify-artist-delete")).isNull()
         }
     }
 }

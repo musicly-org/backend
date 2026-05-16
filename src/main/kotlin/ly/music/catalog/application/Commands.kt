@@ -1,7 +1,8 @@
 package ly.music.catalog.application
 
 import ly.music.catalog.domain.release.ReleasedAt
-import ly.music.catalog.interfaces.rest.release.CreateOrUpdateReleaseRequest
+import ly.music.catalog.interfaces.rest.release.CreateReleaseRequest
+import ly.music.catalog.interfaces.rest.release.UpdateReleaseRequest
 import java.util.UUID
 
 data class CreateArtistCommand(
@@ -39,7 +40,7 @@ data class CreateReleaseCommand(
     val imageUrl: String? = null,
     val spotifyId: String? = null,
 ) {
-    constructor(request: CreateOrUpdateReleaseRequest) : this(
+    constructor(request: CreateReleaseRequest) : this(
         albumId = request.album.uuid(),
         title = request.title,
         releasedAt = ReleasedAt.parseOrNull(request.releasedAt),
@@ -57,7 +58,7 @@ data class UpdateReleaseCommand(
     val spotifyId: String? = null,
     val isDefault: Boolean? = null,
 ) {
-    constructor(id: UUID, request: CreateOrUpdateReleaseRequest) : this(
+    constructor(id: UUID, request: UpdateReleaseRequest) : this(
         id = id,
         albumId = request.album.uuid(),
         title = request.title,
