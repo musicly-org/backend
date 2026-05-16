@@ -8,6 +8,45 @@ import java.util.UUID
 
 class DatabaseCascadeDeleteTest : BackendControllerE2eTestSupport() {
     @Test
+    fun artistDelete_shouldCascadeToArtistSocial() {
+        val artist = createArtist()
+        createArtistSocial(artist = artist)
+
+        assertThat(jdbcTemplate.update("delete from catalog.artists where id = ?", artist.id)).isEqualTo(1)
+
+        assertThat(countRows("artists")).isEqualTo(0)
+        assertThat(countRows("artist_social")).isEqualTo(0)
+    }
+
+    @Test
+    fun releaseDelete_shouldCascadeToReleaseSocial() {
+        val artist = createArtist()
+        val album = createAlbum(artist = artist)
+        val release = createRelease(album = album)
+        createReleaseSocial(release = release)
+
+        assertThat(jdbcTemplate.update("delete from catalog.releases where id = ?", release.id)).isEqualTo(1)
+
+        assertThat(countRows("releases")).isEqualTo(0)
+        assertThat(countRows("release_social")).isEqualTo(0)
+    }
+
+    @Test
+    fun trackDelete_shouldCascadeToTrackSocial() {
+        val artist = createArtist()
+        val album = createAlbum(artist = artist)
+        val release = createRelease(album = album)
+        val song = createSong(artist = artist)
+        val track = createTrack(release = release, song = song)
+        createTrackSocial(track = track)
+
+        assertThat(jdbcTemplate.update("delete from catalog.tracks where id = ?", track.id)).isEqualTo(1)
+
+        assertThat(countRows("tracks")).isEqualTo(0)
+        assertThat(countRows("track_social")).isEqualTo(0)
+    }
+
+    @Test
     fun artistWithAlbumOrSongReferences_shouldReturnDataIntegrityViolation() {
         val artist = createArtist()
         val album = createAlbum(artist = artist)
