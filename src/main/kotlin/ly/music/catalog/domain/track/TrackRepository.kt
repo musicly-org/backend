@@ -1,13 +1,18 @@
 package ly.music.catalog.domain.track
 
-import org.springframework.data.jpa.repository.EntityGraph
+import ly.music.catalog.application.NotFoundException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.Optional
 import java.util.UUID
 
 interface TrackRepository : JpaRepository<TrackEntity, UUID> {
+    fun findBySocialSpotifyId(spotifyId: String): TrackEntity?
+
+    fun existsByReleaseId(releaseId: UUID): Boolean
+
     fun existsByReleaseIdAndDiscNumberAndTrackNumber(
         releaseId: UUID,
         discNumber: Int,
@@ -28,4 +33,6 @@ interface TrackRepository : JpaRepository<TrackEntity, UUID> {
 
     @EntityGraph(attributePaths = ["social", "release"])
     override fun findById(id: UUID): Optional<TrackEntity>
+
+    fun findByIdOrThrow(id: UUID): TrackEntity = findById(id).orElseThrow { NotFoundException("Track", id) }
 }

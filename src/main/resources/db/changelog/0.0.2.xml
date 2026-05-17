@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="1" author="codex">
+        <sql>create schema if not exists auth</sql>
+    </changeSet>
+
+    <changeSet id="2" author="codex">
+        <createTable schemaName="auth" tableName="users">
+            <column name="id" type="uuid">
+                <constraints
+                    nullable="false"
+                    primaryKey="true"
+                    primaryKeyName="pk_auth_users"/>
+            </column>
+            <column name="email" type="varchar(320)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_hash" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="varchar(255)"/>
+            <column name="enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="codex">
+        <createTable schemaName="auth" tableName="user_roles">
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="codex">
+        <addUniqueConstraint
+            schemaName="auth"
+            tableName="users"
+            columnNames="email"
+            constraintName="uk_auth_users_email"/>
+        <addUniqueConstraint
+            schemaName="auth"
+            tableName="user_roles"
+            columnNames="user_id, role"
+            constraintName="uk_auth_user_roles_user_role"/>
+    </changeSet>
+
+    <changeSet id="5" author="codex">
+        <addForeignKeyConstraint
+            baseTableSchemaName="auth"
+            baseTableName="user_roles"
+            baseColumnNames="user_id"
+            referencedTableSchemaName="auth"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            constraintName="fk_auth_user_roles_user"/>
+    </changeSet>
+
+    <changeSet id="6" author="codex">
+        <createIndex schemaName="auth" tableName="user_roles" indexName="ix_auth_user_roles_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -6,8 +6,7 @@ spring:
     caffeine:
       spec: maximumSize=500,expireAfterWrite=10m,recordStats
   devtools:
-    livereload:
-      enabled: false
+    add-properties: false
   jpa:
     hibernate:
       ddl-auto: validate
@@ -18,5 +17,3 @@ spring:
 springdoc:
   api-docs:
     path: /openapi
-  swagger-ui:
-    path: /swagger-ui

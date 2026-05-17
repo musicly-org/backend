@@ -10,7 +10,7 @@ class ReleaseRepositoryConstraintTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class DefaultReleaseConstraint {
         @Test
-        fun rejectsMultipleDefaultReleasesForSameAlbum() {
+        fun multipleDefaultReleasesForSameAlbum_shouldReturnDataIntegrityViolation() {
             val artist = createArtist()
             val album = createAlbum(artist = artist)
             createRelease(album = album, title = "Original", isDefault = true)

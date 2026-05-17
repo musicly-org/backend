@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.queryForList
 
 class ForeignKeyIndexTest : BackendControllerE2eTestSupport() {
     @Test
-    fun everyForeignKeyHasSupportingIndex() {
+    fun foreignKeysWithIndexes_shouldReturnEmptyList() {
         val missingIndexes =
             jdbcTemplate.queryForList<String>(
                 """

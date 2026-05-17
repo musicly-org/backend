@@ -10,7 +10,7 @@ import ly.music.catalog.domain.BaseEntity
 import ly.music.catalog.domain.release.ReleaseEntity
 
 @Entity
-@Table(name = "release_social")
+@Table(name = "release_social", schema = "catalog")
 class ReleaseSocialEntity(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "release_id", nullable = false)

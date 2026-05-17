@@ -23,6 +23,8 @@ Stack:
 Common commands:
 
 ```bash
+./gradlew ktlintFormat
+./gradlew ktlintCheck
 ./gradlew test
 ./gradlew build
 ./gradlew bootRun
@@ -62,6 +64,8 @@ Guidelines:
 - Use one changeSet per table, constraint, index, or comparable schema operation whenever possible.
 - Keep Hibernate `ddl-auto` non-generating for real environments; migrations own schema changes.
 - With Spring Boot 4, prefer explicit dedicated starters/modules when needed for split functionality such as Liquibase and MVC test support.
+- Base persisted entities include `createdAt`, `createdBy`, `updatedAt`, and `updatedBy`.
+- Audit user values should be populated through Spring Data auditing, using the authenticated user when available and `system` otherwise.
 
 Required entities:
 
@@ -110,7 +114,14 @@ Relationship rules:
 - Do not leak database table structure into API responses.
 - Use DTOs/resource representations.
 - Include Spring HATEOAS links consistently where resources are exposed.
-- The API root at `/` should expose only self links for the core model resources; detailed navigation belongs on the resource representations themselves.
+- Mutating request DTOs should use link-oriented relation input through `_links` rather than raw related ids.
+- Prefer concrete request names such as `CreateOrUpdateSongRequest`; avoid alias-only request type names.
+- The API root at `/` is a top-level module entry point and currently exposes:
+  - `self`
+  - `catalog`
+  - `auth`
+- The catalog module root at `/catalog` exposes the catalog entry points for core model resources such as `artists`, `artist`, `album`, `release`, `song`, and `track`.
+- Keep documentation and tests aligned with this split between the global API root and the catalog module root.
 - Keep the OpenAPI contract available through springdoc.
 - OpenAPI JSON path: `/openapi`.
 - Swagger UI path: `/swagger-ui`, with `/swagger-ui/` redirecting to `/swagger-ui/index.html`.
@@ -135,8 +146,24 @@ Example:
 }
 ```
 
+Mutation request example:
+
+```json
+{
+  "title": "Mezzanine",
+  "releasedAt": "1998",
+  "_links": {
+    "artists": [
+      { "href": "/artists/00000000-0000-0000-0000-000000000001" }
+    ]
+  }
+}
+```
+
 ## Testing
 
+- Run `./gradlew ktlintFormat` before finishing Kotlin changes when formatting is needed.
+- Run `./gradlew ktlintCheck` as the default Kotlin style verification step.
 - Unit test domain/application logic.
 - Add integration tests for repositories and REST endpoints where behavior depends on Spring/JPA.
 - End-to-end REST tests use MockMvc, AssertJ, and Testcontainers.

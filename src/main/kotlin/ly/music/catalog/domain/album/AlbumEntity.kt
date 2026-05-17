@@ -15,7 +15,7 @@ import ly.music.catalog.domain.normalizeRequiredText
 import ly.music.catalog.domain.release.ReleasedAt
 
 @Entity
-@Table(name = "albums")
+@Table(name = "albums", schema = "catalog")
 class AlbumEntity(
     title: String,
     releasedAt: ReleasedAt? = null,
@@ -35,6 +35,7 @@ class AlbumEntity(
     @ManyToMany
     @JoinTable(
         name = "album_artists",
+        schema = "catalog",
         joinColumns = [JoinColumn(name = "album_id")],
         inverseJoinColumns = [JoinColumn(name = "artist_id")],
     )

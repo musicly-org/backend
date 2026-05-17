@@ -15,7 +15,7 @@ import ly.music.catalog.domain.release.ReleasedAt
 import ly.music.catalog.domain.track.TrackEntity
 
 @Entity
-@Table(name = "songs")
+@Table(name = "songs", schema = "catalog")
 class SongEntity(
     title: String,
     releasedAt: ReleasedAt? = null,
@@ -30,13 +30,14 @@ class SongEntity(
     @ManyToMany
     @JoinTable(
         name = "song_artists",
+        schema = "catalog",
         joinColumns = [JoinColumn(name = "song_id")],
         inverseJoinColumns = [JoinColumn(name = "artist_id")],
     )
-    var artists: MutableSet<ArtistEntity> = linkedSetOf()
+    var artists: MutableSet<ArtistEntity> = mutableSetOf()
 
     @OneToMany(mappedBy = "song", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var tracks: MutableSet<TrackEntity> = linkedSetOf()
+    var tracks: MutableSet<TrackEntity> = mutableSetOf()
 
     fun updateDetails(
         title: String,

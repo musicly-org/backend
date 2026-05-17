@@ -4,12 +4,14 @@ import ly.music.catalog.BackendControllerE2eTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class ArtistForAlbumControllerE2eTest : BackendControllerE2eTestSupport() {
     @Nested
     inner class GetAlbumArtists {
         @Test
-        fun returnsPagedArtists() {
+        fun existingAlbumArtists_shouldReturnOk() {
             val primaryArtist = createArtist()
             val collaborator = createArtist(name = "Madonna")
             val album = createAlbum(artist = primaryArtist, artists = listOf(primaryArtist, collaborator))
@@ -22,6 +24,16 @@ class ArtistForAlbumControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(items.map { link(it, "self") })
                 .anySatisfy { assertThat(it).endsWith("/artists/${primaryArtist.id}") }
                 .anySatisfy { assertThat(it).endsWith("/artists/${collaborator.id}") }
+        }
+
+        @Test
+        fun missingAlbum_shouldReturnNotFound() {
+            val missingAlbumId = UUID.randomUUID()
+
+            val result = getResponse("/albums/$missingAlbumId/artists")
+
+            status().isNotFound().match(result)
+            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo("Album not found: $missingAlbumId")
         }
     }
 }

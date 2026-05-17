@@ -8,7 +8,46 @@ import java.util.UUID
 
 class DatabaseCascadeDeleteTest : BackendControllerE2eTestSupport() {
     @Test
-    fun deletingArtistIsRejectedWhenAlbumsOrSongsStillReferenceIt() {
+    fun artistDelete_shouldCascadeToArtistSocial() {
+        val artist = createArtist()
+        createArtistSocial(artist = artist)
+
+        assertThat(jdbcTemplate.update("delete from catalog.artists where id = ?", artist.id)).isEqualTo(1)
+
+        assertThat(countRows("artists")).isEqualTo(0)
+        assertThat(countRows("artist_social")).isEqualTo(0)
+    }
+
+    @Test
+    fun releaseDelete_shouldCascadeToReleaseSocial() {
+        val artist = createArtist()
+        val album = createAlbum(artist = artist)
+        val release = createRelease(album = album)
+        createReleaseSocial(release = release)
+
+        assertThat(jdbcTemplate.update("delete from catalog.releases where id = ?", release.id)).isEqualTo(1)
+
+        assertThat(countRows("releases")).isEqualTo(0)
+        assertThat(countRows("release_social")).isEqualTo(0)
+    }
+
+    @Test
+    fun trackDelete_shouldCascadeToTrackSocial() {
+        val artist = createArtist()
+        val album = createAlbum(artist = artist)
+        val release = createRelease(album = album)
+        val song = createSong(artist = artist)
+        val track = createTrack(release = release, song = song)
+        createTrackSocial(track = track)
+
+        assertThat(jdbcTemplate.update("delete from catalog.tracks where id = ?", track.id)).isEqualTo(1)
+
+        assertThat(countRows("tracks")).isEqualTo(0)
+        assertThat(countRows("track_social")).isEqualTo(0)
+    }
+
+    @Test
+    fun artistWithAlbumOrSongReferences_shouldReturnDataIntegrityViolation() {
         val artist = createArtist()
         val album = createAlbum(artist = artist)
         val release = createRelease(album = album)
@@ -17,20 +56,20 @@ class DatabaseCascadeDeleteTest : BackendControllerE2eTestSupport() {
         createTrackSocial(track = track)
 
         jdbcTemplate.update(
-            "insert into artist_social (id, created_at, updated_at, artist_id, spotify_id) values (?, now(), now(), ?, ?)",
+            "insert into catalog.artist_social (id, created_at, created_by, updated_at, updated_by, artist_id, spotify_id) values (?, now(), 'test', now(), 'test', ?, ?)",
             UUID.randomUUID(),
             artist.id,
             "artist-spotify-id",
         )
         jdbcTemplate.update(
-            "insert into release_social (id, created_at, updated_at, release_id, spotify_id) values (?, now(), now(), ?, ?)",
+            "insert into catalog.release_social (id, created_at, created_by, updated_at, updated_by, release_id, spotify_id) values (?, now(), 'test', now(), 'test', ?, ?)",
             UUID.randomUUID(),
             release.id,
             "release-spotify-id",
         )
 
         assertThatThrownBy {
-            jdbcTemplate.update("delete from artists where id = ?", artist.id)
+            jdbcTemplate.update("delete from catalog.artists where id = ?", artist.id)
         }.isInstanceOf(DataIntegrityViolationException::class.java)
 
         assertThat(countRows("artists")).isEqualTo(1)
@@ -46,5 +85,6 @@ class DatabaseCascadeDeleteTest : BackendControllerE2eTestSupport() {
     }
 
     private fun countRows(tableName: String): Int =
-        jdbcTemplate.queryForObject("select count(*) from $tableName", Int::class.java) ?: error("Count query failed for $tableName")
+        jdbcTemplate.queryForObject("select count(*) from catalog.$tableName", Int::class.java)
+            ?: error("Count query failed for $tableName")
 }

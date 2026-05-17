@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test
 
 class ApiRootControllerE2eTest : BackendControllerE2eTestSupport() {
     @Test
-    fun returnsEntryPoints() {
-        val body = getJson("/")
+    fun catalogEntryPoints_shouldReturnOk() {
+        val body = getJson("/catalog")
 
-        assertThat(link(body, "self")).endsWith("/")
+        assertThat(link(body, "self")).isEqualTo("http://localhost:8080/catalog")
         assertThat(link(body, "artists")).isEqualTo("http://localhost:8080/artists")
         assertThat(link(body, "artist")).isEqualTo("http://localhost:8080/artists/{id}")
         assertThat(link(body, "album")).isEqualTo("http://localhost:8080/albums/{id}")

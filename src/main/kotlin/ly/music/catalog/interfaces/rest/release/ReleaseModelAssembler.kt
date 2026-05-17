@@ -1,7 +1,8 @@
 package ly.music.catalog.interfaces.rest.release
 
 import ly.music.catalog.domain.release.ReleaseEntity
-import ly.music.catalog.interfaces.rest.ResourceLinks
+import ly.music.catalog.interfaces.rest.shared.SpotifySocialModel
+import ly.music.catalog.interfaces.rest.song.ResourceLinks
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport
 import org.springframework.stereotype.Component
 
@@ -16,6 +17,7 @@ class ReleaseModelAssembler :
             title = entity.title,
             releasedAt = entity.releasedAt?.value,
             imageUrl = entity.imageUrl,
+            social = entity.social?.let { SpotifySocialModel(it.spotifyId) },
             isDefault = entity.isDefault,
         )
 

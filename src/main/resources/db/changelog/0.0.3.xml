@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="1" author="codex">
+        <dropForeignKeyConstraint
+            baseTableSchemaName="catalog"
+            baseTableName="artist_social"
+            constraintName="fk_artist_social_artist"/>
+        <dropForeignKeyConstraint
+            baseTableSchemaName="catalog"
+            baseTableName="release_social"
+            constraintName="fk_release_social_release"/>
+        <dropForeignKeyConstraint
+            baseTableSchemaName="catalog"
+            baseTableName="track_social"
+            constraintName="fk_track_social_track"/>
+
+        <addForeignKeyConstraint
+            baseTableSchemaName="catalog"
+            baseTableName="artist_social"
+            baseColumnNames="artist_id"
+            referencedTableSchemaName="catalog"
+            referencedTableName="artists"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            constraintName="fk_artist_social_artist"/>
+        <addForeignKeyConstraint
+            baseTableSchemaName="catalog"
+            baseTableName="release_social"
+            baseColumnNames="release_id"
+            referencedTableSchemaName="catalog"
+            referencedTableName="releases"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            constraintName="fk_release_social_release"/>
+        <addForeignKeyConstraint
+            baseTableSchemaName="catalog"
+            baseTableName="track_social"
+            baseColumnNames="track_id"
+            referencedTableSchemaName="catalog"
+            referencedTableName="tracks"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            constraintName="fk_track_social_track"/>
+    </changeSet>
+</databaseChangeLog>
