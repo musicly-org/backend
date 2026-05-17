@@ -34,4 +34,8 @@ class UserEntity(
 
     val permissions: Set<Permission>
         get() = roles.flatMapTo(linkedSetOf()) { it.permissions }
+
+    fun assignRole(role: UserRole) {
+        roles += role
+    }
 }

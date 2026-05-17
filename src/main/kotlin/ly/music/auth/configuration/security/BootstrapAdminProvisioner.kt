@@ -26,7 +26,7 @@ class BootstrapAdminProvisioner(
                 passwordHash = requireNotNull(passwordEncoder.encode(requireNotNull(bootstrapAdminProperties.password))),
                 displayName = requireNotNull(bootstrapAdminProperties.displayName),
                 enabled = true,
-            ).also { it.roles += UserRole.SUPER_ADMIN },
+            ).also { it.assignRole(UserRole.SUPER_ADMIN) },
         )
     }
 

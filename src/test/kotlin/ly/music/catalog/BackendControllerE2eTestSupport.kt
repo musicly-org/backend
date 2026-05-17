@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import ly.music.auth.configuration.security.BootstrapAdminProvisioner
 import ly.music.auth.configuration.security.JwtProperties
+import ly.music.auth.domain.UserRepository
 import ly.music.catalog.domain.album.AlbumEntity
 import ly.music.catalog.domain.album.AlbumRepository
 import ly.music.catalog.domain.artist.ArtistEntity
@@ -84,6 +85,9 @@ abstract class BackendControllerE2eTestSupport {
 
     @Autowired
     protected lateinit var bootstrapAdminProvisioner: BootstrapAdminProvisioner
+
+    @Autowired
+    protected lateinit var userRepository: UserRepository
 
     @Autowired
     protected lateinit var jwtEncoder: JwtEncoder

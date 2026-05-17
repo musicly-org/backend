@@ -8,4 +8,7 @@ object AuthRootResourceLinks {
     fun root() = linkTo(methodOn(AuthRootController::class.java).getRoot()).withSelfRel()
 
     fun login() = linkTo(methodOn(AuthController::class.java).login(LoginRequest("", ""))).withRel("login")
+
+    fun register() =
+        linkTo(methodOn(AuthController::class.java).register(RegisterRequest("", "", null))).withRel("register")
 }

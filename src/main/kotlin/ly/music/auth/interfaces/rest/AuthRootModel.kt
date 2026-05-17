@@ -9,7 +9,8 @@ import org.springframework.hateoas.RepresentationModel
         {
           "_links": {
             "self": { "href": "http://localhost:8080/auth" },
-            "login": { "href": "http://localhost:8080/auth/login" }
+            "login": { "href": "http://localhost:8080/auth/login" },
+            "register": { "href": "http://localhost:8080/auth/register" }
           }
         }
     """,
