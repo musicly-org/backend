@@ -17,6 +17,7 @@ class AuthService(
 ) {
     companion object {
         private const val MAX_EMAIL_LENGTH = 320
+        private const val MAX_DISPLAY_NAME_LENGTH = 255
     }
 
     fun login(
@@ -48,6 +49,11 @@ class AuthService(
             throw InvalidRegistrationException("Password must not be blank")
         }
 
+        val displayName = command.displayName?.trim()?.takeIf { it.isNotEmpty() }
+        if (displayName != null && displayName.length > MAX_DISPLAY_NAME_LENGTH) {
+            throw InvalidRegistrationException("Display name must not exceed 255 characters")
+        }
+
         if (userRepository.existsByEmail(email)) {
             throw EmailAlreadyRegisteredException()
         }
@@ -56,7 +62,7 @@ class AuthService(
             UserEntity(
                 email = email,
                 passwordHash = requireNotNull(passwordEncoder.encode(command.password)),
-                displayName = command.displayName?.trim()?.takeIf { it.isNotEmpty() },
+                displayName = displayName,
                 enabled = true,
             ).also { it.assignRole(UserRole.REGULAR_USER) }
 

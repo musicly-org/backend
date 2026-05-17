@@ -117,6 +117,25 @@ class AuthControllerE2eTest : BackendControllerE2eTestSupport() {
             assertThat(body["message"].asText()).isEqualTo("Email must not exceed 320 characters")
             assertThat(userRepository.count()).isZero()
         }
+
+        @Test
+        fun displayNameLongerThanDatabaseLimit_shouldReturnBadRequest() {
+            val result =
+                postJson(
+                    "/auth/register",
+                    mapOf(
+                        "email" to "listener@musicly.local",
+                        "password" to "change-me",
+                        "displayName" to "a".repeat(256),
+                    ),
+                )
+
+            status().isBadRequest().match(result)
+
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Display name must not exceed 255 characters")
+            assertThat(userRepository.count()).isZero()
+        }
     }
 
     @Nested
