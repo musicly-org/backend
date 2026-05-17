@@ -1,6 +1,8 @@
 package ly.music.auth.interfaces.rest
 
+import ly.music.auth.application.EmailAlreadyRegisteredException
 import ly.music.auth.application.InvalidCredentialsException
+import ly.music.auth.application.InvalidRegistrationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -20,6 +22,26 @@ class AuthErrorHandler {
             AuthErrorModel(
                 status = HttpStatus.UNAUTHORIZED.value(),
                 error = HttpStatus.UNAUTHORIZED.reasonPhrase,
+                message = error.message.orEmpty(),
+            ),
+        )
+
+    @ExceptionHandler(EmailAlreadyRegisteredException::class)
+    fun handleEmailAlreadyRegistered(error: EmailAlreadyRegisteredException): ResponseEntity<AuthErrorModel> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            AuthErrorModel(
+                status = HttpStatus.CONFLICT.value(),
+                error = HttpStatus.CONFLICT.reasonPhrase,
+                message = error.message.orEmpty(),
+            ),
+        )
+
+    @ExceptionHandler(InvalidRegistrationException::class)
+    fun handleInvalidRegistration(error: InvalidRegistrationException): ResponseEntity<AuthErrorModel> =
+        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            AuthErrorModel(
+                status = HttpStatus.BAD_REQUEST.value(),
+                error = HttpStatus.BAD_REQUEST.reasonPhrase,
                 message = error.message.orEmpty(),
             ),
         )

@@ -16,6 +16,7 @@ class AuthRootController {
             AuthRootModel().add(
                 AuthRootResourceLinks.root(),
                 AuthRootResourceLinks.login(),
+                AuthRootResourceLinks.register(),
             ),
         )
 }

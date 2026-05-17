@@ -11,5 +11,6 @@ class AuthRootControllerE2eTest : BackendControllerE2eTestSupport() {
 
         assertThat(link(body, "self")).isEqualTo("http://localhost:8080/auth")
         assertThat(link(body, "login")).isEqualTo("http://localhost:8080/auth/login")
+        assertThat(link(body, "register")).isEqualTo("http://localhost:8080/auth/register")
     }
 }
