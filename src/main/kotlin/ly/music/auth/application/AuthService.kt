@@ -15,6 +15,10 @@ class AuthService(
     private val passwordEncoder: PasswordEncoder,
     private val jwtTokenService: JwtTokenService,
 ) {
+    companion object {
+        private const val MAX_EMAIL_LENGTH = 320
+    }
+
     fun login(
         email: String,
         password: String,
@@ -32,6 +36,18 @@ class AuthService(
 
     fun register(command: RegisterUserCommand): IssuedToken {
         val email = normalizeEmail(command.email)
+        if (email.isBlank()) {
+            throw InvalidRegistrationException("Email must not be blank")
+        }
+
+        if (email.length > MAX_EMAIL_LENGTH) {
+            throw InvalidRegistrationException("Email must not exceed 320 characters")
+        }
+
+        if (command.password.isBlank()) {
+            throw InvalidRegistrationException("Password must not be blank")
+        }
+
         if (userRepository.existsByEmail(email)) {
             throw EmailAlreadyRegisteredException()
         }
@@ -47,8 +63,12 @@ class AuthService(
         val savedUser =
             try {
                 userRepository.saveAndFlush(user)
-            } catch (_: DataIntegrityViolationException) {
-                throw EmailAlreadyRegisteredException()
+            } catch (error: DataIntegrityViolationException) {
+                if (userRepository.existsByEmail(email)) {
+                    throw EmailAlreadyRegisteredException()
+                }
+
+                throw error
             }
 
         return jwtTokenService.issueAccessToken(savedUser)
@@ -60,3 +80,7 @@ class AuthService(
 class InvalidCredentialsException : RuntimeException("Invalid email or password")
 
 class EmailAlreadyRegisteredException : RuntimeException("Email is already registered")
+
+class InvalidRegistrationException(
+    message: String,
+) : RuntimeException(message)

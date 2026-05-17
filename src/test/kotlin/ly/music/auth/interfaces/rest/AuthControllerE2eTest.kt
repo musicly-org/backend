@@ -63,6 +63,60 @@ class AuthControllerE2eTest : BackendControllerE2eTestSupport() {
             val body = objectMapper.readTree(result.response.contentAsByteArray)
             assertThat(body["message"].asText()).isEqualTo("Email is already registered")
         }
+
+        @Test
+        fun blankEmail_shouldReturnBadRequest() {
+            val result =
+                postJson(
+                    "/auth/register",
+                    mapOf(
+                        "email" to "   ",
+                        "password" to "change-me",
+                    ),
+                )
+
+            status().isBadRequest().match(result)
+
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Email must not be blank")
+            assertThat(userRepository.count()).isZero()
+        }
+
+        @Test
+        fun blankPassword_shouldReturnBadRequest() {
+            val result =
+                postJson(
+                    "/auth/register",
+                    mapOf(
+                        "email" to "listener@musicly.local",
+                        "password" to "",
+                    ),
+                )
+
+            status().isBadRequest().match(result)
+
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Password must not be blank")
+            assertThat(userRepository.count()).isZero()
+        }
+
+        @Test
+        fun emailLongerThanDatabaseLimit_shouldReturnBadRequest() {
+            val result =
+                postJson(
+                    "/auth/register",
+                    mapOf(
+                        "email" to "${"a".repeat(309)}@example.test",
+                        "password" to "change-me",
+                    ),
+                )
+
+            status().isBadRequest().match(result)
+
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(body["message"].asText()).isEqualTo("Email must not exceed 320 characters")
+            assertThat(userRepository.count()).isZero()
+        }
     }
 
     @Nested
