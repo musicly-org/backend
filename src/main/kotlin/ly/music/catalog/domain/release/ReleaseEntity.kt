@@ -57,6 +57,14 @@ class ReleaseEntity(
         this.imageUrl = imageUrl
     }
 
+    fun moveToAlbum(album: AlbumEntity) {
+        if (this.album.id == album.id) {
+            return
+        }
+
+        this.album = album
+    }
+
     fun markAsDefault() {
         this.isDefault = true
     }

@@ -50,10 +50,6 @@ class ReleaseService(
             }
         }
 
-        require(!releaseRepository.existsByAlbumIdAndTitleIgnoreCase(command.albumId, normalizedTitle)) {
-            "Release already exists for album: $normalizedTitle"
-        }
-
         val release =
             releaseRepository.save(
                 ReleaseEntity(
@@ -72,14 +68,11 @@ class ReleaseService(
     @CacheEvict(cacheNames = [RELEASES_BY_ALBUM, RELEASE_DEFAULT_BY_ALBUM, RELEASE_BY_ID], allEntries = true)
     fun update(command: UpdateReleaseCommand): ReleaseEntity {
         val release = releaseRepository.findByIdOrThrow(command.id)
-        require(release.album.id == command.albumId) { "Release album cannot change" }
+        val oldAlbum = release.album
+        val oldAlbumId = oldAlbum.id
+        val targetAlbum = albumRepository.findByIdOrThrow(command.albumId)
+        val isMovingToAnotherAlbum = oldAlbumId != targetAlbum.id
         val normalizedTitle = ReleaseEntity.normalizeTitle(command.title)
-
-        if (!release.title.equals(normalizedTitle, ignoreCase = true)) {
-            require(!releaseRepository.existsByAlbumIdAndTitleIgnoreCaseAndIdNot(release.album.id, normalizedTitle, release.id)) {
-                "Release already exists for album: $normalizedTitle"
-            }
-        }
 
         command.spotifyId?.let { spotifyId ->
             releaseRepository.findBySocialSpotifyId(spotifyId)?.let { existing ->
@@ -88,8 +81,94 @@ class ReleaseService(
         }
 
         release.updateDetails(normalizedTitle, command.releasedAt, command.imageUrl)
-        syncDefault(release.album.id, release, command.isDefault == true)
+        if (!isMovingToAnotherAlbum) {
+            syncDefault(release.album.id, release, command.isDefault == true)
+            syncSocial(release, command.spotifyId)
+            return release
+        }
+
+        val oldAlbumReleaseCount = releaseRepository.countByAlbumId(oldAlbumId)
+        val targetAlbumHasDefault = releaseRepository.existsByAlbumIdAndIsDefaultTrue(targetAlbum.id)
+        val wasDefault = release.isDefault
+
+        release.clearDefault()
+        release.moveToAlbum(targetAlbum)
+        releaseRepository.saveAndFlush(release)
+
+        if (oldAlbumReleaseCount == 1) {
+            albumRepository.delete(oldAlbum)
+        } else if (wasDefault) {
+            updateDefault(oldAlbumId)
+        }
+
+        syncDefault(
+            targetAlbum.id,
+            release,
+            command.isDefault == true || !targetAlbumHasDefault,
+        )
         syncSocial(release, command.spotifyId)
+        return release
+    }
+
+    @Transactional
+    @CacheEvict(cacheNames = [RELEASES_BY_ALBUM, RELEASE_DEFAULT_BY_ALBUM, RELEASE_BY_ID], allEntries = true)
+    fun patch(command: PatchReleaseCommand): ReleaseEntity {
+        val release = releaseRepository.findByIdOrThrow(command.id)
+        val oldAlbum = release.album
+        val oldAlbumId = oldAlbum.id
+        val targetAlbum =
+            if (command.hasAlbumId) {
+                albumRepository.findByIdOrThrow(command.albumId ?: throw IllegalArgumentException("Missing _links.album"))
+            } else {
+                oldAlbum
+            }
+        val isMovingToAnotherAlbum = oldAlbumId != targetAlbum.id
+        val normalizedTitle =
+            if (command.hasTitle) {
+                ReleaseEntity.normalizeTitle(command.title ?: throw IllegalArgumentException("Release title is required"))
+            } else {
+                release.title
+            }
+        val releasedAt = if (command.hasReleasedAt) command.releasedAt else release.releasedAt
+        val imageUrl = if (command.hasImageUrl) command.imageUrl else release.imageUrl
+
+        if (command.hasSpotifyId) {
+            command.spotifyId
+                ?.takeIf { it.isNotBlank() }
+                ?.let { spotifyId ->
+                    releaseRepository.findBySocialSpotifyId(spotifyId)?.let { existing ->
+                        require(existing.id == release.id) { "Spotify release already linked: $spotifyId" }
+                    }
+                }
+        }
+
+        release.updateDetails(normalizedTitle, releasedAt, imageUrl)
+        if (!isMovingToAnotherAlbum) {
+            syncDefault(release.album.id, release, command.hasIsDefault && command.isDefault == true)
+            patchSocial(release, command.spotifyId, command.hasSpotifyId)
+            return release
+        }
+
+        val oldAlbumReleaseCount = releaseRepository.countByAlbumId(oldAlbumId)
+        val targetAlbumHasDefault = releaseRepository.existsByAlbumIdAndIsDefaultTrue(targetAlbum.id)
+        val wasDefault = release.isDefault
+
+        release.clearDefault()
+        release.moveToAlbum(targetAlbum)
+        releaseRepository.saveAndFlush(release)
+
+        if (oldAlbumReleaseCount == 1) {
+            albumRepository.delete(oldAlbum)
+        } else if (wasDefault) {
+            updateDefault(oldAlbumId)
+        }
+
+        syncDefault(
+            targetAlbum.id,
+            release,
+            (command.hasIsDefault && command.isDefault == true) || !targetAlbumHasDefault,
+        )
+        patchSocial(release, command.spotifyId, command.hasSpotifyId)
         return release
     }
 
@@ -152,6 +231,24 @@ class ReleaseService(
         } else {
             social.spotifyId = spotifyId
         }
+    }
+
+    private fun patchSocial(
+        release: ReleaseEntity,
+        spotifyId: String?,
+        provided: Boolean,
+    ) {
+        if (!provided) {
+            return
+        }
+
+        if (spotifyId.isNullOrBlank()) {
+            release.social = null
+            releaseSocialRepository.deleteByReleaseId(release.id)
+            return
+        }
+
+        syncSocial(release, spotifyId)
     }
 
     private fun updateDefault(albumId: UUID) {
