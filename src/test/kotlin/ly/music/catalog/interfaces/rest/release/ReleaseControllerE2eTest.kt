@@ -113,6 +113,33 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
         }
 
         @Test
+        fun duplicateTitleForSameAlbum_shouldReturnCreated() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            createRelease(album = album, title = "Original", isDefault = true)
+
+            val result =
+                postJsonAuthorized(
+                    "/releases",
+                    mapOf(
+                        "title" to " original ",
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${album.id}")),
+                    ),
+                    token,
+                )
+
+            status().isCreated().match(result)
+            val location = requireNotNull(result.response.getHeader("Location"))
+            val releaseId = UUID.fromString(location.substringAfterLast("/"))
+            val release = releaseRepository.findByIdOrThrow(releaseId)
+
+            assertThat(release.title).isEqualTo("original")
+            assertThat(release.album.id).isEqualTo(album.id)
+            assertThat(release.isDefault).isFalse()
+        }
+
+        @Test
         fun duplicateSpotifyId_shouldReturnBadRequest() {
             val token = loginAsBootstrapAdmin()
             val artist = createArtist()
@@ -191,7 +218,7 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
         }
 
         @Test
-        fun conflictingSiblingTitle_shouldReturnBadRequest() {
+        fun conflictingSiblingTitle_shouldReturnOk() {
             val token = loginAsBootstrapAdmin()
             val artist = createArtist()
             val album = createAlbum(artist = artist)
@@ -211,15 +238,15 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
                     token,
                 )
 
-            status().isBadRequest().match(result)
+            status().isOk().match(result)
             val body = objectMapper.readTree(result.response.contentAsByteArray)
-            assertThat(body["message"].asText()).isEqualTo("Release already exists for album: original")
-            assertThat(releaseRepository.findByIdOrThrow(deluxeRelease.id).title).isEqualTo("Deluxe Edition")
+            assertThat(body["title"].asText()).isEqualTo("original")
             assertThat(releaseRepository.findByIdOrThrow(originalRelease.id).title).isEqualTo("Original")
+            assertThat(releaseRepository.findByIdOrThrow(deluxeRelease.id).title).isEqualTo("original")
         }
 
         @Test
-        fun conflictingAlbumLink_shouldReturnBadRequest() {
+        fun changingAlbum_shouldReturnOk() {
             val token = loginAsBootstrapAdmin()
             val artist = createArtist()
             val album = createAlbum(artist = artist)
@@ -239,10 +266,139 @@ class ReleaseControllerE2eTest : BackendControllerE2eTestSupport() {
                     token,
                 )
 
-            status().isBadRequest().match(result)
+            status().isOk().match(result)
             val body = objectMapper.readTree(result.response.contentAsByteArray)
-            assertThat(body["message"].asText()).isEqualTo("Release album cannot change")
-            assertThat(releaseRepository.findByIdOrThrow(release.id).album.id).isEqualTo(album.id)
+            assertThat(link(body, "album")).endsWith("/albums/${anotherAlbum.id}")
+            assertThat(releaseRepository.findByIdOrThrow(release.id).album.id).isEqualTo(anotherAlbum.id)
+            assertThat(albumRepository.findById(album.id)).isEmpty
+        }
+
+        @Test
+        fun movingDefaultReleaseToAnotherAlbum_shouldPromoteNewDefaultForOldAlbum() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val anotherAlbum = createAlbum(artist = artist, title = "100th Window")
+            val defaultRelease = createRelease(album = album, title = "Original", releasedAt = "1998-04-20", isDefault = true)
+            val remainingRelease = createRelease(album = album, title = "Deluxe Edition", releasedAt = "1998-05-01")
+
+            val result =
+                putJsonAuthorized(
+                    "/releases/${defaultRelease.id}",
+                    mapOf(
+                        "title" to defaultRelease.title,
+                        "releasedAt" to defaultRelease.releasedAt?.value,
+                        "imageUrl" to defaultRelease.imageUrl,
+                        "isDefault" to false,
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${anotherAlbum.id}")),
+                    ),
+                    token,
+                )
+
+            status().isOk().match(result)
+            assertThat(releaseRepository.findByIdOrThrow(defaultRelease.id).album.id).isEqualTo(anotherAlbum.id)
+            assertThat(releaseRepository.findByIdOrThrow(defaultRelease.id).isDefault).isTrue()
+            assertThat(releaseRepository.findByIdOrThrow(remainingRelease.id).isDefault).isTrue()
+        }
+    }
+
+    @Nested
+    inner class PatchRelease {
+        @Test
+        fun titleOnly_shouldUpdateOnlyProvidedField() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val release = createRelease(album = album, title = "Original", releasedAt = "1998-04-20", imageUrl = "https://example.test/original.jpg", isDefault = true)
+
+            val result =
+                patchJsonAuthorized(
+                    "/releases/${release.id}",
+                    mapOf("title" to " Deluxe Edition "),
+                    token,
+                )
+
+            status().isOk().match(result)
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            val patchedRelease = releaseRepository.findByIdOrThrow(release.id)
+
+            assertThat(body["title"].asText()).isEqualTo("Deluxe Edition")
+            assertThat(body["releasedAt"].asText()).isEqualTo("1998-04-20")
+            assertThat(body["imageUrl"].asText()).isEqualTo("https://example.test/original.jpg")
+            assertThat(body["isDefault"].asBoolean()).isTrue()
+            assertThat(patchedRelease.title).isEqualTo("Deluxe Edition")
+            assertThat(patchedRelease.releasedAt?.value).isEqualTo("1998-04-20")
+            assertThat(patchedRelease.imageUrl).isEqualTo("https://example.test/original.jpg")
+        }
+
+        @Test
+        fun emptyBody_shouldNotUpdateAnything() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val release = createRelease(album = album, title = "Original", releasedAt = "1998-04-20", imageUrl = "https://example.test/original.jpg", isDefault = true)
+
+            val result =
+                patchJsonAuthorized(
+                    "/releases/${release.id}",
+                    emptyMap<String, Any>(),
+                    token,
+                )
+
+            status().isOk().match(result)
+            val patchedRelease = releaseRepository.findByIdOrThrow(release.id)
+            assertThat(patchedRelease.title).isEqualTo("Original")
+            assertThat(patchedRelease.releasedAt?.value).isEqualTo("1998-04-20")
+            assertThat(patchedRelease.imageUrl).isEqualTo("https://example.test/original.jpg")
+            assertThat(patchedRelease.isDefault).isTrue()
+        }
+
+        @Test
+        fun albumOnly_shouldMoveReleaseAndDeleteEmptyOldAlbum() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val anotherAlbum = createAlbum(artist = artist, title = "100th Window")
+            val release = createRelease(album = album, title = "Original", isDefault = true)
+
+            val result =
+                patchJsonAuthorized(
+                    "/releases/${release.id}",
+                    mapOf(
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${anotherAlbum.id}")),
+                    ),
+                    token,
+                )
+
+            status().isOk().match(result)
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(link(body, "album")).endsWith("/albums/${anotherAlbum.id}")
+            assertThat(releaseRepository.findByIdOrThrow(release.id).album.id).isEqualTo(anotherAlbum.id)
+            assertThat(albumRepository.findById(album.id)).isEmpty
+        }
+
+        @Test
+        fun spotifyLinkedRelease_shouldMoveAlbumWithoutDeletingRelease() {
+            val token = loginAsBootstrapAdmin()
+            val artist = createArtist()
+            val album = createAlbum(artist = artist)
+            val anotherAlbum = createAlbum(artist = artist, title = "100th Window")
+            val release = createRelease(album = album, title = "Original", isDefault = true)
+            createReleaseSocial(release = release, spotifyId = "spotify-release-123")
+
+            val result =
+                patchJsonAuthorized(
+                    "/releases/${release.id}",
+                    mapOf(
+                        "_links" to mapOf("album" to mapOf("href" to "/albums/${anotherAlbum.id}")),
+                    ),
+                    token,
+                )
+
+            status().isOk().match(result)
+            assertThat(releaseRepository.findByIdOrThrow(release.id).album.id).isEqualTo(anotherAlbum.id)
+            assertThat(releaseSocialRepository.findBySpotifyId("spotify-release-123")).isNotNull()
+            assertThat(albumRepository.findById(album.id)).isEmpty
         }
     }
 

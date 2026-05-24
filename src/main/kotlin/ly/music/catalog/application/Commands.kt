@@ -2,6 +2,7 @@ package ly.music.catalog.application
 
 import ly.music.catalog.domain.release.ReleasedAt
 import ly.music.catalog.interfaces.rest.release.CreateReleaseRequest
+import ly.music.catalog.interfaces.rest.release.PatchReleaseRequest
 import ly.music.catalog.interfaces.rest.release.UpdateReleaseRequest
 import java.util.UUID
 
@@ -66,6 +67,38 @@ data class UpdateReleaseCommand(
         imageUrl = request.imageUrl,
         spotifyId = request.spotifyId,
         isDefault = request.isDefault,
+    )
+}
+
+data class PatchReleaseCommand(
+    val id: UUID,
+    val title: String? = null,
+    val hasTitle: Boolean = false,
+    val releasedAt: ReleasedAt? = null,
+    val hasReleasedAt: Boolean = false,
+    val imageUrl: String? = null,
+    val hasImageUrl: Boolean = false,
+    val spotifyId: String? = null,
+    val hasSpotifyId: Boolean = false,
+    val isDefault: Boolean? = null,
+    val hasIsDefault: Boolean = false,
+    val albumId: UUID? = null,
+    val hasAlbumId: Boolean = false,
+) {
+    constructor(id: UUID, request: PatchReleaseRequest) : this(
+        id = id,
+        title = request.title,
+        hasTitle = request.hasTitle,
+        releasedAt = if (request.hasReleasedAt) ReleasedAt.parseOrNull(request.releasedAt) else null,
+        hasReleasedAt = request.hasReleasedAt,
+        imageUrl = request.imageUrl,
+        hasImageUrl = request.hasImageUrl,
+        spotifyId = request.spotifyId,
+        hasSpotifyId = request.hasSpotifyId,
+        isDefault = request.isDefault,
+        hasIsDefault = request.hasIsDefault,
+        albumId = request.album?.uuid(),
+        hasAlbumId = request.hasAlbum,
     )
 }
 

@@ -11,17 +11,6 @@ interface ReleaseRepository : JpaRepository<ReleaseEntity, UUID> {
 
     fun existsBySocialSpotifyId(spotifyId: String): Boolean
 
-    fun existsByAlbumIdAndTitleIgnoreCase(
-        albumId: UUID,
-        title: String,
-    ): Boolean
-
-    fun existsByAlbumIdAndTitleIgnoreCaseAndIdNot(
-        albumId: UUID,
-        title: String,
-        id: UUID,
-    ): Boolean
-
     fun findByAlbumIdAndIsDefaultTrue(albumId: UUID): ReleaseEntity?
 
     fun existsByAlbumIdAndIsDefaultTrue(albumId: UUID): Boolean

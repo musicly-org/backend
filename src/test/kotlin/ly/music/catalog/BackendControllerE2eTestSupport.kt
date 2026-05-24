@@ -40,6 +40,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -167,6 +168,19 @@ abstract class BackendControllerE2eTestSupport {
         mockMvc
             .perform(
                 put(localUri(path))
+                    .header("Authorization", "Bearer $bearerToken")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsBytes(payload)),
+            ).andReturn()
+
+    protected fun patchJsonAuthorized(
+        path: String,
+        payload: Any,
+        bearerToken: String,
+    ): MvcResult =
+        mockMvc
+            .perform(
+                patch(localUri(path))
                     .header("Authorization", "Bearer $bearerToken")
                     .contentType("application/json")
                     .content(objectMapper.writeValueAsBytes(payload)),

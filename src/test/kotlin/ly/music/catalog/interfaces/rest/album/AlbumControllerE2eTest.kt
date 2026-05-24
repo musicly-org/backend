@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.Pageable
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
@@ -84,7 +85,14 @@ class AlbumControllerE2eTest : BackendControllerE2eTestSupport() {
                 )
 
             status().isBadRequest().match(result)
-            assertThat(objectMapper.readTree(result.response.contentAsByteArray)["message"].asText()).isEqualTo("Missing _links.artists")
+            val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(result.response.contentType).startsWith(MediaType.APPLICATION_PROBLEM_JSON_VALUE)
+            assertThat(body["type"].asText()).isEqualTo("about:blank")
+            assertThat(body["title"].asText()).isEqualTo("Bad Request")
+            assertThat(body["status"].asInt()).isEqualTo(400)
+            assertThat(body["detail"].asText()).isEqualTo("Missing _links.artists")
+            assertThat(body["instance"].asText()).isEqualTo("/albums")
+            assertThat(body["message"].asText()).isEqualTo("Missing _links.artists")
         }
 
         @Test

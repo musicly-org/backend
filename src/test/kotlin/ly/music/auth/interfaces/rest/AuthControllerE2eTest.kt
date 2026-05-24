@@ -5,6 +5,7 @@ import ly.music.catalog.BackendControllerE2eTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class AuthControllerE2eTest : BackendControllerE2eTestSupport() {
@@ -61,6 +62,12 @@ class AuthControllerE2eTest : BackendControllerE2eTestSupport() {
             status().isConflict().match(result)
 
             val body = objectMapper.readTree(result.response.contentAsByteArray)
+            assertThat(result.response.contentType).startsWith(MediaType.APPLICATION_PROBLEM_JSON_VALUE)
+            assertThat(body["type"].asText()).isEqualTo("about:blank")
+            assertThat(body["title"].asText()).isEqualTo("Conflict")
+            assertThat(body["status"].asInt()).isEqualTo(409)
+            assertThat(body["detail"].asText()).isEqualTo("Email is already registered")
+            assertThat(body["instance"].asText()).isEqualTo("/auth/register")
             assertThat(body["message"].asText()).isEqualTo("Email is already registered")
         }
 
